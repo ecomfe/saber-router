@@ -1,0 +1,13 @@
+{
+    "name": "saber-router",
+    "version": "0.1.0",
+    "description": "简单hash路由控制",
+    "main": "main",
+    "maintainers": [{
+        "name": "treelite",
+        "email": "c.xinle@gmail.com"
+    }],
+    "license": "BSD",
+    "repository": "git://github.com/ecomfe/saber-router.git",
+    "bugs": "https://github.com/ecomfe/saber-router/issues"
+}
