@@ -13,17 +13,37 @@ define(function (require) {
      * @type {Object}
      */
     var curLocation = {
-            str: '/',
-            path: '/'
+            str: '',
+            path: ''
         };
 
     /**
      * 路由处理器
      *
-     * @type {Object}
+     * @type {Array.<Object>}
      */
-    var handlers = {};
-    
+    var handlers = [];
+
+    /**
+     * 判断是否已存在路由处理器
+     *
+     * @inner
+     * @param {string} path
+     * @return {boolean}
+     */
+    function indexOfHandler(path) {
+        var index = -1;
+
+        handlers.some(function (item, i) {
+            if (item.path.toString() == path.toString()) {
+                index = i;
+            }
+            return index != -1;
+        });
+
+        return index;
+    }
+
     /**
      * 解析URL
      *
@@ -40,29 +60,32 @@ define(function (require) {
      * URL跳转
      *
      * @inner
+     * @param {Object} url
+     * @param {string} url.path
+     * @param {Object} url.query
+     * @param {string} url.str
      */
     function redirect(url) {
+        var handle;
 
-        var items = Object.keys(handlers);
-        var hit = false;
-        for (var i = 0, path; !hit && (path = items[i]); i++) {
-            if (path instanceof RegExp) {
-                hit = path.test(url.path);
+        handlers.some(function (item) {
+            if (item.path instanceof RegExp
+                && item.path.test(url.path)
+            ) {
+                handle = item;
             }
-            else {
-                hit = path == url.path;
+            else if (item.path == url.path) {
+                handle = item;
             }
 
-            if (hit) {
-                var fn = handlers[path];
-                fn(url.path, url.query);
-            }
-        }
+            return !!handle;
+        });
 
-        if (!hit) {
+        if (!handle) {
             throw new Error('can not find ' + url.path);
         }
         else {
+            handle.fn.call(handle.thisArg, url.path, url.query);
             curLocation = url;
         }
     }
@@ -86,13 +109,18 @@ define(function (require) {
      * @public
      * @param {string|RegExp} path
      * @param {function(path, query)} fn
+     * @param {Object} thisArg
      */
-    exports.add = function (path, fn) {
-        if (handlers[path]) {
+    exports.add = function (path, fn, thisArg) {
+        if (indexOfHandler(path) >= 0) {
             throw new Error('path has been existed');
         }
 
-        handlers[path] = fn;
+        handlers.push({
+            path: path,
+            fn: fn,
+            thisArg: thisArg
+        });
     };
 
     /**
@@ -102,9 +130,21 @@ define(function (require) {
      * @param {string} path
      */
     exports.remove = function (path) {
-        if (handlers[path]) {
-            delete handlers[path];
+        var i = indexOfHandler(path);
+        if (i >= 0) {
+            handlers.splice(i, 1);
         }
+    };
+
+    /**
+     * 清除所有路由配置
+     *
+     * @public
+     */
+    exports.clear = function () {
+        handlers = [];
+        curLocation.path = '';
+        curLocation.str = '';
     };
 
     /**
@@ -115,6 +155,10 @@ define(function (require) {
      * @param {boolean} force 是否强制跳转
      */
     exports.redirect = function (url, force) {
+        if (!url) {
+            return;
+        }
+
         url = resolveUrl(url);
         if (url.str != curLocation.str || force) {
             location.hash = '#' + url.str;
@@ -141,8 +185,8 @@ define(function (require) {
      *
      * @public
      */
-    exports.end = function () {
-        window.removeEventLsitener('hashchange', monitor, false);
+    exports.stop = function () {
+        window.removeEventListener('hashchange', monitor, false);
     };
 
     return exports;
