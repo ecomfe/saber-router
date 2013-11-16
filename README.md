@@ -1,6 +1,10 @@
 # saber-router
 
-简单`hash`路由控制，支持正则表达式路径控制，使用`~`添加查询条件
+适用于移动端的`hash`路由控制
+
+* 支持相对路径 `location.hash = '../somewhere/action'`
+* 支持正则表达式控制路径
+* 使用`~`添加查询条件 `#/action~uid=100&name=saber`
 
 ## Usage
 
@@ -21,12 +25,13 @@ router.start();
 
 ## API
 
-### .add( path, fn )
+### .add( path, fn, thisArg )
 
 添加路由规则
 
 * `path` `{string|RegExp}` 路由路径
-* `fn` `{function(string, Object)}` 路由请求函数
+* `fn` `{function(string, Object)}` 路由处理函数
+* `thisArg` `{Object}` 路径处理函数的`this`指针
 
 ### .remove( path )
 
@@ -43,7 +48,7 @@ URL跳转
 
 启动路由监听
 
-### .end()
+### .stop()
 
 停止路由监听
 
