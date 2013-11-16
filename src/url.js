@@ -58,6 +58,13 @@ define(function () {
 
         var paths = to.split('/');
 
+        // 如果最后一位不是空
+        // 则最后一位是文件，不应参与路径的比较
+        if (res[res.length - 1]) {
+            res.splice(res.length - 1, 1);
+        }
+        
+        // 去除res中的空元素
         for (var i = 0, item; i < res.length; i++) {
             if (!(item = res[i])) {
                 res.splice(i, 1);
@@ -74,24 +81,28 @@ define(function () {
             }
         });
 
-        // 首部添加空元素
+        // 首部不是空元素则添加一个空元素
         // 使最后join后能以`/`开头
-        res.unshift('');
+        if (res[0] || res.length <= 1) {
+            res.unshift('');
+        }
 
         // 去除连续的空元素
         // 防止最后join的时候出现多个`/`
-        var empty;
-        for (var i = 0, item; i < res.length; i++) {
-            item = res[i];
-            if (!item) {
-                if (empty) {
-                    res.splice(i, 1);
-                    i--;
+        if (res.length > 2) {
+            var empty;
+            for (var i = 0, item; i < res.length; i++) {
+                item = res[i];
+                if (!item) {
+                    if (empty) {
+                        res.splice(i, 1);
+                        i--;
+                    }
+                    empty = true;
                 }
-                empty = true;
-            }
-            else {
-                empty = false;
+                else {
+                    empty = false;
+                }
             }
         }
 

@@ -56,6 +56,18 @@ define(function (require) {
            expect(res).toBe('/home/work');
         });
 
+        it('one param with empty', function () {
+           var res = urlHelper.resolve('');
+
+           expect(res).toBe('/');
+        });
+
+        it('one param with absolute path', function () {
+           var res = urlHelper.resolve('/');
+
+           expect(res).toBe('/');
+        });
+
         it('one param with relative path', function () {
            var res = urlHelper.resolve('../home/usr/./../work');
            expect(res).toBe('/home/work');
@@ -65,7 +77,25 @@ define(function (require) {
         });
 
         it('two params', function () {
-            var res = urlHelper.resolve('/home/usr', './../../work/');
+            var res = urlHelper.resolve('/home/usr', './../work/');
+
+            expect(res).toBe('/work/');
+        });
+
+        it('two params, second is absolute', function () {
+            var res = urlHelper.resolve('/home/usr', '/work/saber');
+
+            expect(res).toBe('/work/saber');
+        });
+
+        it('two params, first is empty, second is relative', function () {
+            var res = urlHelper.resolve('', './../../work/');
+
+            expect(res).toBe('/work/');
+        });
+
+        it('two params, first is root, second is relative', function () {
+            var res = urlHelper.resolve('/', './../../work/');
 
             expect(res).toBe('/work/');
         });
