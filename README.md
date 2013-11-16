@@ -25,6 +25,10 @@ router.start();
 
 ## API
 
+### .index
+
+根路径，默认为`/`
+
 ### .add( path, fn, thisArg )
 
 添加路由规则
@@ -34,6 +38,12 @@ router.start();
 * `thisArg` `{Object}` 路径处理函数的`this`指针
 
 ### .remove( path )
+
+删除路由规则
+
+### .clear()
+
+清除所有路由规则
 
 ### .redirect( url, force )
 

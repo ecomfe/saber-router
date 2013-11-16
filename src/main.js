@@ -35,6 +35,7 @@ define(function (require) {
         var index = -1;
 
         handlers.some(function (item, i) {
+            // toString是为了判断正则是否相等
             if (item.path.toString() == path.toString()) {
                 index = i;
             }
