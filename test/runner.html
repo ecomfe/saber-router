@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+        <title>Jasmine Spec Runner</title>
+        <link rel="stylesheet" href="http://firede.github.io/saber-static/jasmine/1.3.1/jasmine.css">
+        <script src="http://firede.github.io/saber-static/jasmine/1.3.1/jasmine.js"></script>
+        <script src="http://firede.github.io/saber-static/jasmine/1.3.1/jasmine-html.js"></script>
+        <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-4-2/esl.js"></script>
+    </head>
+    <body>
+        <script>
+        require.config({
+            packages: [
+                {
+                    name: 'saber-router',
+                    location: '../src'
+                }
+            ]
+        });
+
+        (function() {
+            var jasmineEnv = jasmine.getEnv();
+            jasmineEnv.updateInterval = 250;
+
+            var htmlReporter = new jasmine.HtmlReporter();
+            jasmineEnv.addReporter(htmlReporter);
+
+            jasmineEnv.specFilter = function(spec) {
+                return htmlReporter.specFilter(spec);
+            };
+
+            require(['url'], function() {
+                jasmineEnv.execute();
+            });
+        })();
+        </script>
+    </body>
+</html>

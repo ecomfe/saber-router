@@ -46,28 +46,56 @@ define(function () {
         var to = arguments[0];
 
         if (arguments[1]) {
-            form = to;
+            from = to;
             to = arguments[1];
         }
 
         // 目标路径从根目录开始
         // 则忽略起始路径
         var res = to.charAt(0) != '/' 
-                    ? form.split('/')
+                    ? from.split('/')
                     : [];
 
         var paths = to.split('/');
 
+        for (var i = 0, item; i < res.length; i++) {
+            if (!(item = res[i])) {
+                res.splice(i, 1);
+                i--;
+            }
+        }
+        
         paths.forEach(function (item) {
             if (item == '..') {
                 res.splice(res.length - 1, 1);
             }
-            else if (item && item !== '.') {
+            else if (item !== '.') {
                 res.push(item);
             }
         });
 
-        return '/' + res.join('/');
+        // 首部添加空元素
+        // 使最后join后能以`/`开头
+        res.unshift('');
+
+        // 去除连续的空元素
+        // 防止最后join的时候出现多个`/`
+        var empty;
+        for (var i = 0, item; i < res.length; i++) {
+            item = res[i];
+            if (!item) {
+                if (empty) {
+                    res.splice(i, 1);
+                    i--;
+                }
+                empty = true;
+            }
+            else {
+                empty = false;
+            }
+        }
+
+        return res.join('/');
     };
 
     return exports;
