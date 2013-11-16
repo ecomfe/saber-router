@@ -26,33 +26,50 @@ define(function (require) {
         });
 
         describe('has', function () {
+            it('one handler, without `thisArg`', function () {
+                var res;
+                var obj = {name: 'saber'};
+
+                router.add(
+                    '/', 
+                    function () {
+                        res = this.name;
+                    },
+                    obj
+                );
+
+                router.redirect('/');
+
+                expect(res).toBe(obj.name);
+            });
+
             it('one handler, without querystring', function () {
-                var done;
+                var called;
                 router.add('/', function (url, query) {
                     expect(url).toBe('/');
                     expect(query).toEqual({});
-                    done = true;
+                    called = true;
                 });
 
                 router.redirect('/');
 
-                expect(done).toBeTruthy();
+                expect(called).toBeTruthy();
             });
 
             it('one handler, with querystring', function () {
-                var done;
+                var called;
                 router.add('/', function (url, query) {
                     expect(url).toBe('/');
                     expect(query).toEqual({uid: '100'});
-                    done = true;
+                    called = true;
                 });
 
                 router.redirect('/~uid=100');
 
-                expect(done).toBeTruthy();
+                expect(called).toBeTruthy();
             });
 
-            it('one handler, multi called with the same querystring', function () {
+            it('one handler, multi call with the same querystring', function () {
                 var called = 0;
                 router.add('/', function () {
                     called++;
@@ -65,7 +82,7 @@ define(function (require) {
                 expect(called).toBe(1);
             });
 
-            it('one handler, multi called with defferent querystring', function () {
+            it('one handler, multi call with defferent querystring', function () {
                 var called = 0;
                 router.add('/', function () {
                     called++;
@@ -79,7 +96,7 @@ define(function (require) {
                 expect(called).toBe(4);
             });
 
-            it('one handler, force called with the same querystring', function () {
+            it('one handler, force call with the same querystring', function () {
                 var called = 0;
 
                 router.add('/', function () {
@@ -214,7 +231,7 @@ define(function (require) {
             location.hash = '';
         });
 
-        it('use `rounter.index` as default home path', function () {
+        it('use `router.index` as default home path', function () {
             var defCalled;
             var called;
 
@@ -261,7 +278,7 @@ define(function (require) {
         });
 
         it('absolute path width query', function () {
-            var called
+            var called;
             var querystring;
 
             router.add('/', function () {});
@@ -292,7 +309,7 @@ define(function (require) {
         it('relative path', function () {
             var called;
 
-            router.index = '/work/list'
+            router.index = '/work/list';
             router.add('/work/list', function () {});
             router.add('/index', function () {
                 called = true;
