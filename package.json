@@ -7,6 +7,9 @@
         "name": "treelite",
         "email": "c.xinle@gmail.com"
     }],
+    "dependencies": {
+        "saber-lang": "~0.2.0"
+    },
     "license": "BSD",
     "repository": "git://github.com/ecomfe/saber-router.git",
     "bugs": "https://github.com/ecomfe/saber-router/issues"

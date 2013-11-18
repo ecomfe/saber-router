@@ -147,6 +147,35 @@ define(function (require) {
                 expect(exception).toBeTruthy();
             });
 
+            it('one handler with RegExp and capturing group', function () {
+                var handler = jasmine.createSpy('hander');
+
+                router.add(new RegExp('item/([^~/]+)/comments'), handler);
+
+                router.redirect('/item/100/comments');
+
+                expect(handler).toHaveBeenCalled();
+
+                var query = handler.mostRecentCall.args[1];
+                expect(query).toEqual({'$1': '100'});
+            });
+
+            it('one RESTful handler', function () {
+                var handler = jasmine.createSpy('handler');
+
+                router.add('/item/:id/comments/:page/re', handler);
+
+                var path = '/item/100/comments/2/re'
+                router.redirect(path + '~name=saber');
+
+                expect(handler).toHaveBeenCalled();
+
+                var url = handler.mostRecentCall.args[0];
+                var query = handler.mostRecentCall.args[1];
+                expect(url).toBe(path);
+                expect(query).toEqual({id: '100', page: '2', name: 'saber'});
+            });
+
             it('two handlers, called correctly', function () {
                 var first;
                 var second;

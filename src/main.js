@@ -5,6 +5,7 @@
 
 define(function (require) {
 
+    var extend = require('saber-lang/extend');
     var urlHelper = require('./url');
 
     /**
@@ -18,11 +19,11 @@ define(function (require) {
         };
 
     /**
-     * 路由处理器
+     * 路由规则
      *
      * @type {Array.<Object>}
      */
-    var handlers = [];
+    var rules = [];
 
     /**
      * 判断是否已存在路由处理器
@@ -34,7 +35,7 @@ define(function (require) {
     function indexOfHandler(path) {
         var index = -1;
 
-        handlers.some(function (item, i) {
+        rules.some(function (item, i) {
             // toString是为了判断正则是否相等
             if (item.path.toString() == path.toString()) {
                 index = i;
@@ -58,6 +59,25 @@ define(function (require) {
     }
 
     /**
+     * 从path中获取query
+     * 针对正则表达式的规则
+     *
+     * @inner
+     */
+    function getQueryFromPath(path, item) {
+        var res = {};
+        var names = item.params || [];
+        var params = path.match(item.path) || [];
+        
+        for (var i = 1, name; i < params.length; i++) {
+            name = names[i - 1] || '$' + i;
+            res[name] = params[i];
+        }
+
+        return res;
+    }
+
+    /**
      * URL跳转
      *
      * @inner
@@ -67,28 +87,72 @@ define(function (require) {
      * @param {string} url.str
      */
     function redirect(url) {
-        var handle;
+        var handler;
+        var query = extend({}, url.query);
 
-        handlers.some(function (item) {
+        rules.some(function (item) {
             if (item.path instanceof RegExp
                 && item.path.test(url.path)
             ) {
-                handle = item;
+                handler = item;
+                query = extend(getQueryFromPath(url.path, item), query);
             }
             else if (item.path == url.path) {
-                handle = item;
+                handler = item;
             }
 
-            return !!handle;
+            return !!handler;
         });
 
-        if (!handle) {
+        if (!handler) {
             throw new Error('can not find ' + url.path);
         }
         else {
-            handle.fn.call(handle.thisArg, url.path, url.query);
+            handler.fn.call(handler.thisArg, url.path, query);
             curLocation = url;
         }
+    }
+
+    /**
+     * 处理RESTful风格的路径
+     * 使用正则表达式
+     *
+     * @inner
+     */
+    function restful(path) {
+        var res = {
+                params: []
+            };
+
+        res.path = path.replace(/:([^/~]+)/g, function ($0, $1) {
+            res.params.push($1);
+            return '([^/~]+)';
+        });
+
+        res.path = new RegExp(res.path);
+
+        return res;
+    }
+
+    /**
+     * 添加路由规则
+     *
+     * @inner
+     */
+    function addRule(path, fn, thisArg) {
+        var rule = {
+                path: path,
+                fn: fn,
+                thisArg: thisArg
+            };
+
+        if (!(path instanceof RegExp) 
+            && path.indexOf(':') >= 0
+        ) {
+            rule = extend(rule, restful(path));
+        }
+
+        rules.push(rule);
     }
 
     /**
@@ -105,7 +169,7 @@ define(function (require) {
         };
 
     /**
-     * 添加路由配置
+     * 添加路由规则
      *
      * @public
      * @param {string|RegExp} path
@@ -117,15 +181,11 @@ define(function (require) {
             throw new Error('path has been existed');
         }
 
-        handlers.push({
-            path: path,
-            fn: fn,
-            thisArg: thisArg
-        });
+        addRule(path, fn, thisArg);
     };
 
     /**
-     * 删除路由配置
+     * 删除路由规则
      *
      * @public
      * @param {string} path
@@ -133,17 +193,17 @@ define(function (require) {
     exports.remove = function (path) {
         var i = indexOfHandler(path);
         if (i >= 0) {
-            handlers.splice(i, 1);
+            rules.splice(i, 1);
         }
     };
 
     /**
-     * 清除所有路由配置
+     * 清除所有路由规则
      *
      * @public
      */
     exports.clear = function () {
-        handlers = [];
+        rules = [];
         curLocation.path = '';
         curLocation.str = '';
     };
