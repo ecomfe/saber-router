@@ -54,6 +54,10 @@ define(function (require) {
     function resolveUrl(url) {
         url = urlHelper.parse(url);
         url.path = urlHelper.resolve(curLocation.path, url.path);
+        url.str = url.path + 
+                        (url.str.indexOf('~') >= 0 
+                        ? url.str.substring(url.str.indexOf('~'))
+                        : '');
 
         return url;
     }
@@ -110,6 +114,7 @@ define(function (require) {
         else {
             handler.fn.call(handler.thisArg, url.path, query);
             curLocation = url;
+            location.hash = '#' + url.str;
         }
     }
 
@@ -222,7 +227,6 @@ define(function (require) {
 
         url = resolveUrl(url);
         if (url.str != curLocation.str || force) {
-            location.hash = '#' + url.str;
             redirect(url);
         }
     };
