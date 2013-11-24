@@ -53,6 +53,7 @@ define(function (require) {
      */
     function resolveUrl(url) {
         url = urlHelper.parse(url);
+        url.isRelative = url.path.charAt(0) !== '/';
         url.path = urlHelper.resolve(curLocation.path, url.path);
         url.str = url.path + 
                         (url.str.indexOf('~') >= 0 
@@ -114,7 +115,13 @@ define(function (require) {
         else {
             handler.fn.call(handler.thisArg, url.path, query);
             curLocation = url;
-            location.hash = '#' + url.str;
+            if (url.isRelative) {
+                var href = location.href.split('#')[0];
+                history.replaceState({}, document.title, href + '#' + url.str);
+            }
+            else {
+                location.hash = '#' + url.str;
+            }
         }
     }
 
