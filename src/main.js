@@ -115,13 +115,6 @@ define(function (require) {
         else {
             handler.fn.call(handler.thisArg, url.path, query);
             curLocation = url;
-            if (url.isRelative) {
-                var href = location.href.split('#')[0];
-                history.replaceState({}, document.title, href + '#' + url.str);
-            }
-            else {
-                location.hash = '#' + url.str;
-            }
         }
     }
 
@@ -228,13 +221,19 @@ define(function (require) {
      * @param {boolean} force 是否强制跳转
      */
     exports.redirect = function (url, force) {
-        if (!url) {
-            return;
-        }
+        url = url || exports.index;
 
         url = resolveUrl(url);
         if (url.str != curLocation.str || force) {
             redirect(url);
+        }
+
+        if (url.isRelative) {
+            var href = location.href.split('#')[0];
+            history.replaceState({}, document.title, href + '#' + url.str);
+        }
+        else {
+            location.hash = '#' + url.str;
         }
     };
 
@@ -246,10 +245,7 @@ define(function (require) {
     exports.start = function () {
         window.addEventListener('hashchange', monitor, false);
 
-        var url = urlHelper.parse(location.hash);
-        var def = urlHelper.parse(exports.index);
-
-        redirect(url.path ? url : def);
+        exports.redirect(location.hash);
     };
 
     /**
