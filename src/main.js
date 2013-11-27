@@ -86,12 +86,19 @@ define(function (require) {
      * URL跳转
      *
      * @inner
-     * @param {Object} url
-     * @param {string} url.path
-     * @param {Object} url.query
-     * @param {string} url.str
+     * @param {string} url
+     * @param {boolean} force
+     * @return {Url}
      */
-    function redirect(url) {
+    function redirect(url, force) {
+
+        url = url || exports.index;
+
+        url = resolveUrl(url);
+        if (url.str == curLocation.str && !force) {
+            return url;
+        }
+
         var handler;
         var query = extend({}, url.query);
 
@@ -114,8 +121,11 @@ define(function (require) {
         }
         else {
             handler.fn.call(handler.thisArg, url.path, query);
-            curLocation = url;
         }
+
+        curLocation = url;
+
+        return extend({}, url);
     }
 
     /**
@@ -166,7 +176,15 @@ define(function (require) {
      * @inner
      */
     function monitor() {
-        exports.redirect(location.hash);
+        var url = redirect(location.hash);
+
+        if (url.isRelative) {
+            var href = location.href.split('#')[0];
+            // 只能替换没法删除
+            // 遇到相对路径跳转当前页的情况就没辙了
+            // 会导致有两次相同路径的历史条目...
+            history.replaceState({}, document.title, href + '#' + url.str);
+        }
     }
     
     var exports = {
@@ -221,20 +239,8 @@ define(function (require) {
      * @param {boolean} force 是否强制跳转
      */
     exports.redirect = function (url, force) {
-        url = url || exports.index;
-
-        url = resolveUrl(url);
-        if (url.str != curLocation.str || force) {
-            redirect(url);
-        }
-
-        if (url.isRelative) {
-            var href = location.href.split('#')[0];
-            history.replaceState({}, document.title, href + '#' + url.str);
-        }
-        else {
-            location.hash = '#' + url.str;
-        }
+        url = redirect(url, force);
+        location.hash = '#' + url.str;
     };
 
     /**
