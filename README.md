@@ -1,9 +1,10 @@
-# saber-router
+# saber-router [![Build Status](https://travis-ci.org/ecomfe/saber-router.svg)](https://travis-ci.org/ecomfe/saber-router)
 
 适用于移动端的`hash`路由控制
 
 * 支持相对路径 `location.hash = '../somewhere/action'`
 * 支持正则表达式控制路径
+* 支持`RESTful`
 * 使用`~`添加查询条件 `#/action~uid=100&name=saber`
 
 ## Usage
@@ -13,9 +14,9 @@ var router = require('saber-router');
 
 // 添加路由规则
 router.add(
-    '/add',
+    '/custom/:id', // RESTful风格
     function (url, query) {
-        ...
+        console.log(query.id);
     }
 );
 
