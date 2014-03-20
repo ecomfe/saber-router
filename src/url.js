@@ -26,6 +26,9 @@ define(function () {
         hash.replace(/~(.*)$/, function ($0, $1) {
             var items = $1.split('&');
             items.forEach(function (item) {
+                if (!item) {
+                    return;
+                }
                 item = item.split('=');
                 res.query[item[0]] = item[1];
             });

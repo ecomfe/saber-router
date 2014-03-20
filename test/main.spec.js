@@ -156,7 +156,7 @@ define(function (require) {
 
                 expect(handler).toHaveBeenCalled();
 
-                var query = handler.mostRecentCall.args[1];
+                var query = handler.calls.mostRecent().args[1];
                 expect(query).toEqual({'$1': '100'});
             });
 
@@ -170,8 +170,8 @@ define(function (require) {
 
                 expect(handler).toHaveBeenCalled();
 
-                var url = handler.mostRecentCall.args[0];
-                var query = handler.mostRecentCall.args[1];
+                var url = handler.calls.mostRecent().args[0];
+                var query = handler.calls.mostRecent().args[1];
                 expect(url).toBe(path);
                 expect(query).toEqual({id: '100', page: '2', name: 'saber'});
             });
@@ -280,7 +280,7 @@ define(function (require) {
             expect(called).toBeTruthy();
         });
 
-        it('absolute path', function () {
+        it('absolute path', function (done) {
             var called;
 
             router.add('/', function () {});
@@ -293,20 +293,14 @@ define(function (require) {
 
             location.hash = '#/index';
 
-            waitsFor(
-                function () {
-                    return called;
-                }, 
-                'timeout',
-                500
-            );
-
-            runs(function () {
+            setTimeout(function () {
                 expect(called).toBeTruthy(); 
-            });
+                done();
+            }, 100);
+
         });
 
-        it('absolute path width query', function () {
+        it('absolute path width query', function (done) {
             var called;
             var querystring;
 
@@ -321,21 +315,14 @@ define(function (require) {
 
             location.hash = '#/index~uid=100';
 
-            waitsFor(
-                function () {
-                    return called;
-                }, 
-                'timeout',
-                500
-            );
-
-            runs(function () {
+            setTimeout(function () {
                 expect(called).toBeTruthy(); 
                 expect(querystring).toEqual({uid: '100'}); 
-            });
+                done();
+            }, 100);
         });
 
-        it('relative path', function () {
+        it('relative path', function (done) {
             var called;
 
             router.index = '/work/list';
@@ -348,20 +335,13 @@ define(function (require) {
 
             location.hash = '#./../index';
 
-            waitsFor(
-                function () {
-                    return called;
-                }, 
-                'timeout',
-                500
-            );
-
-            runs(function () {
+            setTimeout(function () {
                 expect(called).toBeTruthy(); 
-            });
+                done();
+            }, 100);
         });
 
-        it('same path do not fire twice', function () {
+        it('same path do not fire twice', function (done) {
             var called = 0;
 
             router.add('/', function () {});
@@ -373,33 +353,13 @@ define(function (require) {
                 
             location.hash = '#/index';
 
-            var tick = new Date();
-            waitsFor(
-                function () {
-                    var now = new Date();
-                    return now.getTime() - tick.getTime() > 400;
-                }, 
-                'timeout', 
-                500
-            );
-
-            runs(function () {
+            setTimeout(function () {
                 location.hash = '#/index';
-            });
-
-            tick = new Date();
-            waitsFor(
-                function () {
-                    var now = new Date();
-                    return now.getTime() - tick.getTime() > 400;
-                },
-                'timeout',
-                500
-            );
-
-            runs(function () {
-                expect(called).toBe(1);
-            });
+                setTimeout(function () {
+                    expect(called).toBe(1);
+                    done();
+                }, 100)
+            }, 100);
 
         });
 
