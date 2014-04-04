@@ -6,17 +6,14 @@
 define(function (require) {
 
     var extend = require('saber-lang/extend');
-    var urlHelper = require('./url');
+    var URL = require('./URL');
 
     /**
      * 当前路径
      *
      * @type {Object}
      */
-    var curLocation = {
-            str: '',
-            path: ''
-        };
+    var curLocation = {};
 
     /**
      * 路由规则
@@ -44,23 +41,6 @@ define(function (require) {
         });
 
         return index;
-    }
-
-    /**
-     * 解析URL
-     *
-     * @inner
-     */
-    function resolveUrl(url) {
-        url = urlHelper.parse(url);
-        url.isRelative = url.path.charAt(0) !== '/';
-        url.path = urlHelper.resolve(curLocation.path, url.path);
-        url.str = url.path + 
-                        (url.str.indexOf('~') >= 0 
-                        ? url.str.substring(url.str.indexOf('~'))
-                        : '');
-
-        return url;
     }
 
     /**
@@ -94,22 +74,22 @@ define(function (require) {
 
         url = url || exports.index;
 
-        url = resolveUrl(url);
-        if (url.str == curLocation.str && !force) {
+        url = new URL(url, curLocation);
+        if (url.equal(curLocation) && !force) {
             return url;
         }
 
         var handler;
-        var query = extend({}, url.query);
+        var query = extend({}, url.getQuery());
 
         rules.some(function (item) {
             if (item.path instanceof RegExp
-                && item.path.test(url.path)
+                && item.path.test(url.getPath())
             ) {
                 handler = item;
-                query = extend(getQueryFromPath(url.path, item), query);
+                query = extend(getQueryFromPath(url.getPath(), item), query);
             }
-            else if (item.path == url.path) {
+            else if (url.getPath() == item.path) {
                 handler = item;
             }
 
@@ -117,15 +97,15 @@ define(function (require) {
         });
 
         if (!handler) {
-            throw new Error('can not find ' + url.path);
+            throw new Error('can not find ' + url.getPath());
         }
         else {
-            handler.fn.call(handler.thisArg, url.path, query);
+            handler.fn.call(handler.thisArg, url.getPath(), query);
         }
 
         curLocation = url;
 
-        return extend({}, url);
+        return url;
     }
 
     /**
@@ -183,7 +163,7 @@ define(function (require) {
             // 只能替换没法删除
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
-            history.replaceState({}, document.title, href + '#' + url.str);
+            history.replaceState({}, document.title, href + '#' + url.toString());
         }
     }
     
@@ -227,8 +207,7 @@ define(function (require) {
      */
     exports.clear = function () {
         rules = [];
-        curLocation.path = '';
-        curLocation.str = '';
+        curLocation = {};
     };
 
     /**
@@ -240,7 +219,7 @@ define(function (require) {
      */
     exports.redirect = function (url, force) {
         url = redirect(url, force);
-        location.hash = '#' + url.str;
+        location.hash = '#' + url.toString();
     };
 
     /**

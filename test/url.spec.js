@@ -5,99 +5,93 @@
 
 define(function (require) {
 
-    var urlHelper = require('saber-router/url');
+    var URL = require('saber-router/URL');
 
-    describe('url.parse', function () {
-        it('normal', function () {
-            var urlStr = '/home';
+    describe('URL', function () {
 
-            var url = urlHelper.parse(urlStr);
+        describe('constructor', function () {
 
-            expect(url.path).toBe('/home');
-            expect(url.query).toEqual({});
-            expect(url.str).toBe(urlStr);
+            it('should pass width a string param', function () {
+                var url = new URL('/hospital/search~kw=xxx');
+
+                expect(url.isRelative).toBeFalsy();
+                expect(url.path.get()).toEqual('/hospital/search');
+                expect(url.query.equal('kw=xxx')).toBeTruthy();
+            });
+
+            it('should pass width base param', function () {
+                var base = new URL('/hospital/search~kw=xxx');
+                var url = new URL('../search~kw=xxx', base);
+
+                expect(url.isRelative).toBeTruthy();
+                expect(url.path.get()).toEqual('/search');
+                expect(url.query.equal('kw=xxx')).toBeTruthy();
+            });
+
         });
 
-        it('begin with hash', function () {
-            var urlStr = '#/home';
+        describe('.toString()', function () {
 
-            var url = urlHelper.parse(urlStr);
+            it('should return the right string', function () {
+                var str = '../work/search~kw=xxx'
+                var url = new URL(str);
+                expect(url.toString()).toEqual(str);
 
-            expect(url.path).toBe('/home');
-            expect(url.query).toEqual({});
-            expect(url.str).toBe('/home');
+                str = 'work/search~';
+                url = new URL(str);
+                expect(url.toString()).toEqual('work/search');
+            });
+
         });
 
-        it('with querystring', function () {
-            var urlStr = '/home~name=treelite&uid=1001';
+        describe('.toEqual()', function () {
 
-            var url = urlHelper.parse(urlStr);
+            it('shoud return boolean', function () {
+                var url1 = new URL('../work/search~kw=xxx&t=10');
+                var url2 = new URL('../work/search');
 
-            expect(url.path).toBe('/home');
-            expect(url.query).toEqual({name: 'treelite', uid: '1001'});
-            expect(url.str).toBe(urlStr);
+                expect(url1.equal(url2)).toBeFalsy();
+                expect(url2.equal(url1)).toBeFalsy();
+            });
+
+            it('should ingore query order', function () {
+                var url1 = new URL('../work/search~kw=xxx&t=10');
+                var url2 = new URL('../work/search~t=10&kw=xxx');
+
+                expect(url1.equal(url2)).toBeTruthy();
+                expect(url2.equal(url1)).toBeTruthy();
+            });
+
         });
 
-        it('with wrong querystring', function () {
-            var urlStr = '/home~name=treelite&uid=~1001~&';
+        describe('.getQuery()', function () {
 
-            var url = urlHelper.parse(urlStr);
+            it('should return query data', function ()  {
+                var url = new URL('work~kw=' + encodeURIComponent('中文') + '&t=10&t=11');
 
-            expect(url.path).toBe('/home');
-            expect(url.query).toEqual({name: 'treelite', uid: '~1001~'});
-            expect(url.str).toBe(urlStr);
-        });
-    });
+                var query = url.getQuery(url);
+                expect(Object.keys(query).length).toBe(2);
+                expect(query.kw).toEqual('中文');
+                expect(query.t).toEqual(['10', '11']);
+            });
 
-    describe('url.resolve', function () {
-        it('one param', function () {
-           var res = urlHelper.resolve('/home/usr/../work');
+            it('should return empty object when has no query', function () {
+                var url = new URL('work');
 
-           expect(res).toBe('/home/work');
-        });
+                expect(url.getQuery()).toEqual({});
+            });
 
-        it('one param with empty', function () {
-           var res = urlHelper.resolve('');
-
-           expect(res).toBe('/');
         });
 
-        it('one param with absolute path', function () {
-           var res = urlHelper.resolve('/');
+        describe('.getPath()', function () {
 
-           expect(res).toBe('/');
-        });
+            it('should return string', function () {
+                var url = new URL('work/search');
 
-        it('one param with relative path', function () {
-           var res = urlHelper.resolve('../home/usr/./../work');
-           expect(res).toBe('/home/work');
+                expect(url.getPath()).toEqual('work/search');
+            });
 
-           res = urlHelper.resolve('./home/usr/../work');
-           expect(res).toBe('/home/work');
-        });
-
-        it('two params', function () {
-            var res = urlHelper.resolve('/home/usr', './../work/');
-
-            expect(res).toBe('/work/');
-        });
-
-        it('two params, second is absolute', function () {
-            var res = urlHelper.resolve('/home/usr', '/work/saber');
-
-            expect(res).toBe('/work/saber');
-        });
-
-        it('two params, first is empty, second is relative', function () {
-            var res = urlHelper.resolve('', './../../work/');
-
-            expect(res).toBe('/work/');
-        });
-
-        it('two params, first is root, second is relative', function () {
-            var res = urlHelper.resolve('/', './../../work/');
-
-            expect(res).toBe('/work/');
         });
     });
+
 });

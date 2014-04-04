@@ -13,7 +13,8 @@
     "test": "phantomjs test/run-jasmine.js test/runner.html"
   },
   "dependencies": {
-    "saber-lang": "~0.3.0"
+    "saber-lang": "~0.3.0",
+    "saber-uri": "~0.1.0"
   },
   "devDependencies": {
     "phantomjs": "~1.9.7-1"

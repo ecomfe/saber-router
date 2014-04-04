@@ -26,7 +26,7 @@ define(function (require) {
         });
 
         describe('has', function () {
-            it('one handler, without `thisArg`', function () {
+            it('one handler, with `thisArg`', function () {
                 var res;
                 var obj = {name: 'saber'};
 
@@ -69,7 +69,7 @@ define(function (require) {
                 expect(called).toBeTruthy();
             });
 
-            it('one handler, multi call with the same querystring', function () {
+            it('one handler, multi call with the same path', function () {
                 var called = 0;
                 router.add('/', function () {
                     called++;
@@ -78,6 +78,19 @@ define(function (require) {
                 router.redirect('/');
                 router.redirect('/');
                 router.redirect('/');
+
+                expect(called).toBe(1);
+            });
+
+            it('one handler, multi call with the same querystring', function () {
+                var called = 0;
+                router.add('/', function () {
+                    called++;
+                });
+
+                router.redirect('/~kw=w&t=10');
+                router.redirect('/~t=10&kw=w');
+                router.redirect('/~kw=w&t=10');
 
                 expect(called).toBe(1);
             });
