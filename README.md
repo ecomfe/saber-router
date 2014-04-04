@@ -46,12 +46,13 @@ router.start();
 
 清除所有路由规则
 
-### .redirect( url, force )
+### .redirect( url, query, force )
 
 URL跳转
 
 * `url` `{string}` url
-* `force` `{boolean}` 是否强制跳转
+* `query` `{Object=}` 查询条件
+* `force` `{boolean=}` 是否强制跳转
 
 删除路由规则
 
