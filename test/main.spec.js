@@ -109,7 +109,7 @@ define(function (require) {
                 expect(called).toBe(4);
             });
 
-            it('one handler, force call with the same querystring', function () {
+            it('one handler, force call with the same path', function () {
                 var called = 0;
 
                 router.add('/', function () {
@@ -119,6 +119,32 @@ define(function (require) {
                 router.redirect('/');
                 router.redirect('/');
                 router.redirect('/', true);
+
+                expect(called).toBe(2);
+            });
+
+            it('one handler with query object', function () {
+                router.add('/', function (url, query) {
+                    expect(Object.keys(query).length).toBe(2);
+                    expect(query.name).toEqual('treelite');
+                    expect(query.ke).toEqual('ww');
+                });
+
+                router.redirect('/~ke=ww', {name: 'treelite'})
+            });
+
+            it('one handler, with query object and fore', function () {
+                var called = 0;
+
+                router.add('/', function (url, query) {
+                    called++;
+                    expect(Object.keys(query).length).toBe(1);
+                    expect(query.kw).toEqual('ww');
+                });
+
+                router.redirect('/~kw=ww');
+                router.redirect('/~kw=ww');
+                router.redirect('/', {kw: 'ww'}, true);
 
                 expect(called).toBe(2);
             });

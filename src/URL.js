@@ -15,10 +15,14 @@ define(function (require) {
      *
      * @constructor
      * @param {string} str
-     * @param {URL=} base
+     * @param {Object=} options
+     * @param {Object=} options.query
+     * @param {URL=} options.base
      */
-    function URL(str, base) {
-        base = base || {};
+    function URL(str, options) {
+        options = options || {};
+        var base = options.base || {};
+
         str = str.trim();
         if (str.charAt(0) == '#') {
             str = str.substring(1);
@@ -30,8 +34,11 @@ define(function (require) {
         this.isRelative = path.charAt(0) !== '/';
         this.path = new Path(path, base.path);
 
-        var query = str[1] && str[1].trim()
-        this.query = new Query(query || '');
+        var queryStr = str[1] && str[1].trim()
+        this.query = new Query(queryStr || '');
+        if (options.query) {
+            this.query.add(options.query);
+        }
     }
 
     /**
@@ -63,6 +70,17 @@ define(function (require) {
      */
     URL.prototype.getQuery = function () {
         return this.query.get();
+    };
+
+    /**
+     * 添加查询条件
+     *
+     * @public
+     * @param {string|Object} key
+     * @param {string} value
+     */
+    URL.prototype.addQuery = function (key, value) {
+        this.query.add(key, value);
     };
 
     /**

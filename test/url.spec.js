@@ -21,11 +21,19 @@ define(function (require) {
 
             it('should pass width base param', function () {
                 var base = new URL('/hospital/search~kw=xxx');
-                var url = new URL('../search~kw=xxx', base);
+                var url = new URL('../search~kw=xxx', {base: base});
 
                 expect(url.isRelative).toBeTruthy();
                 expect(url.path.get()).toEqual('/search');
                 expect(url.query.equal('kw=xxx')).toBeTruthy();
+            });
+
+            it('should pass with query', function () {
+                var url = new URL('/index~kw=www&t=10', {query: {t: '20'}});
+
+                expect(url.isRelative).toBeFalsy();
+                expect(url.path.get()).toEqual('/index');
+                expect(url.query.equal('kw=www&t=10&t=20')).toBeTruthy();
             });
 
         });
@@ -92,6 +100,25 @@ define(function (require) {
             });
 
         });
+
+        describe('.addQuery()', function () {
+
+            it('should add item', function () {
+                var url = new URL('work/search');
+
+                url.addQuery('kw', 'www');
+                expect(url.query.equal('kw=www')).toBeTruthy();
+            });
+
+            it('should add object', function () {
+                var url = new URL('work/search');
+
+                url.addQuery({kw: 'www'});
+                expect(url.query.equal('kw=www')).toBeTruthy();
+            });
+
+        });
+
     });
 
 });

@@ -62,6 +62,11 @@ define(function (require) {
         return res;
     }
 
+    function createURL(url, query, base) {
+        url = url || exports.index;
+        return new URL(url, {query: query, base: base});
+    }
+
     /**
      * URL跳转
      *
@@ -72,9 +77,10 @@ define(function (require) {
      */
     function redirect(url, force) {
 
-        url = url || exports.index;
+        if (!(url instanceof URL)) {
+            url = createURL(url, null, curLocation);
+        }
 
-        url = new URL(url, curLocation);
         if (url.equal(curLocation) && !force) {
             return url;
         }
@@ -215,10 +221,20 @@ define(function (require) {
      *
      * @public
      * @param {string} url
-     * @param {boolean} force 是否强制跳转
+     * @param {Object=} query
+     * @param {boolean=} force 是否强制跳转
      */
-    exports.redirect = function (url, force) {
-        url = redirect(url, force);
+    exports.redirect = function (url, query, force) {
+        var args = Array.prototype.slice.call(arguments);
+        if ('[object Boolean]'
+            == Object.prototype.toString.call(args[args.length - 1])
+        ) {
+            force = args.pop();
+            query = args[1];
+        }
+
+        url = createURL(url, query, curLocation);
+        redirect(url, force);
         location.hash = '#' + url.toString();
     };
 
