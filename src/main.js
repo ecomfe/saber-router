@@ -7,6 +7,7 @@ define(function (require) {
 
     var extend = require('saber-lang/extend');
     var URL = require('./URL');
+    var config = require('./config');
 
     /**
      * 当前路径
@@ -63,7 +64,7 @@ define(function (require) {
     }
 
     function createURL(url, query, base) {
-        url = url || exports.index;
+        url = url || config.path;
         return new URL(url, {query: query, base: base});
     }
 
@@ -95,7 +96,7 @@ define(function (require) {
                 handler = item;
                 query = extend(getQueryFromPath(url.getPath(), item), query);
             }
-            else if (url.getPath() == item.path) {
+            else if (url.equalPath(item.path)) {
                 handler = item;
             }
 
@@ -169,13 +170,29 @@ define(function (require) {
             // 只能替换没法删除
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
-            history.replaceState({}, document.title, href + '#' + url.toString());
+            history.replaceState(
+                {}, 
+                document.title, 
+                href + '#' + url.toString()
+            );
         }
     }
     
-    var exports = {
-            index: '/'
-        };
+    var exports = {};
+
+    /**
+     * 设置配置信息
+     *
+     * @public
+     * @param {Object} options 配置信息
+     * @param {string=} options.root 默认路径
+     * @param {string=} options.index index文件名称
+     */
+    exports.config = function (options) {
+        options = options || {};
+
+        extend(config, options);
+    };
 
     /**
      * 添加路由规则

@@ -7,9 +7,26 @@ define(function (require) {
 
     var Path = require('saber-uri/component/Path');
     var Query = require('saber-uri/component/Query');
+    var config = require('./config');
 
     var QUERY_SPLIT = '~';
-   
+
+    /**
+     * normal path
+     * 如果路径指向文件夹（以`/`结尾）
+     * 则添加index文件名
+     *
+     * @inner
+     * @param {string} path
+     * @return {string}
+     */
+    function normalPath(path) {
+        if (path.charAt(path.length - 1) == '/') {
+            path += config.index;
+        }
+        return path;
+    }
+
     /**
      * URL
      *
@@ -34,7 +51,7 @@ define(function (require) {
         this.isRelative = path.charAt(0) !== '/';
         this.path = new Path(path, base.path);
 
-        var queryStr = str[1] && str[1].trim()
+        var queryStr = str[1] && str[1].trim();
         this.query = new Query(queryStr || '');
         if (options.query) {
             this.query.add(options.query);
@@ -52,14 +69,28 @@ define(function (require) {
     };
 
     /**
+     * 比较Path
+     *
+     * @public
+     * @return {boolean}
+     */
+    URL.prototype.equalPath = function (path) {
+        var myPath = normalPath(this.path.get());
+        path = normalPath(path);
+
+        return myPath == path;
+    };
+
+    /**
      * 比较
      *
      * @public
+     * @param {URL} url
      * @return {Boolean}
      */
     URL.prototype.equal = function (url) {
-        return this.path.equal(url.path)
-            && this.query.equal(url.query);
+        return this.query.equal(url.query)
+            && this.equalPath(url.path.get());
     };
 
     /**
