@@ -26,9 +26,13 @@ router.start();
 
 ## API
 
-### .index
+### .config( options )
 
-根路径，默认为`/`
+全局配置
+
+* `options` `{Object=}` 配置参数
+* `options.path` `{string=}` 默认路径 默认为`'/'`
+* `options.index` `{string=}` index文件名 默认为`''`
 
 ### .add( path, fn, thisArg )
 
