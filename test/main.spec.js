@@ -25,6 +25,19 @@ define(function (require) {
             expect(hadThrowed).toBeTruthy();
         });
 
+        it('defualt index is empty', function () {
+            var fn = jasmine.createSpy('fn');
+
+            router.add('/index', fn);
+
+            try {
+                router.redirect('/');
+            }
+            catch (e) {}
+
+            expect(fn).not.toHaveBeenCalled();
+        });
+
         describe('has', function () {
             it('one handler, with `thisArg`', function () {
                 var res;
@@ -295,30 +308,18 @@ define(function (require) {
         afterEach(function () {
             router.stop();
             router.clear();
-            router.index = '/';
             location.hash = '';
         });
 
-        it('use `router.index` as default home path', function () {
-            var defCalled;
-            var called;
+        it('default path is `/`', function () {
+            var fn = jasmine.createSpy('fn');
 
-            router.index = '/index';
-
-            router.add('/', function () {
-                defCalled = true;
-            });
-
-            router.add('/index', function () {
-                called = true;
-            });
-
+            router.add('/', fn);
             router.start();
 
-            expect(defCalled).toBeFalsy();
-            expect(called).toBeTruthy();
+            expect(fn).toHaveBeenCalled();
         });
-
+        
         it('absolute path', function (done) {
             var called;
 
@@ -364,7 +365,9 @@ define(function (require) {
         it('relative path', function (done) {
             var called;
 
-            router.index = '/work/list';
+            router.config({
+                path: '/work/list'
+            });
             router.add('/work/list', function () {});
             router.add('/index', function () {
                 called = true;
@@ -376,6 +379,9 @@ define(function (require) {
 
             setTimeout(function () {
                 expect(called).toBeTruthy(); 
+                router.config({
+                    path: '/'
+                });
                 done();
             }, 100);
         });
@@ -400,6 +406,67 @@ define(function (require) {
                 }, 100)
             }, 100);
 
+        });
+
+    });
+
+    describe('router.config', function () {
+
+        afterEach(function () {
+            // reset
+            router.config({
+                index: '',
+                path: '/'
+            });
+
+            router.clear();
+            location.hash = '';
+        });
+
+        it('should set default home path', function () {
+            var defCalled;
+            var called;
+
+            router.config({
+                path: '/index'
+            });
+
+            router.add('/', function () {
+                defCalled = true;
+            });
+
+            router.add('/index', function () {
+                called = true;
+            });
+
+            router.start();
+
+            expect(defCalled).toBeFalsy();
+            expect(called).toBeTruthy();
+        });
+
+        it('use `router.config` to set index name', function () {
+            var fn = jasmine.createSpy('fn');
+
+            router.config({
+                index: 'index'
+            });
+            router.add('/index', fn);
+
+            router.redirect('/');
+            expect(fn.calls.count()).toBe(1);
+
+            router.remove('/index');
+
+            try {
+                router.redirect('/', true);
+            }
+            catch (e) {}
+            expect(fn.calls.count()).toBe(1);
+
+            router.add('/', fn);
+            router.redirect('/index', true);
+            expect(fn.calls.count()).toBe(2);
         });
 
     });
