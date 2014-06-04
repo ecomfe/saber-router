@@ -185,7 +185,7 @@ define(function (require) {
      *
      * @public
      * @param {Object} options 配置信息
-     * @param {string=} options.root 默认路径
+     * @param {string=} options.path 默认路径
      * @param {string=} options.index index文件名称
      */
     exports.config = function (options) {
