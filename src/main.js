@@ -90,11 +90,11 @@ define(function (require) {
         var query = extend({}, url.getQuery());
 
         rules.some(function (item) {
-            if (item.path instanceof RegExp
-                && item.path.test(url.getPath())
-            ) {
-                handler = item;
-                query = extend(getQueryFromPath(url.getPath(), item), query);
+            if (item.path instanceof RegExp) {
+                if (item.path.test(url.getPath())) {
+                    handler = item;
+                    query = extend(getQueryFromPath(url.getPath(), item), query);
+                }
             }
             else if (url.equalPath(item.path)) {
                 handler = item;
@@ -104,7 +104,7 @@ define(function (require) {
         });
 
         if (!handler) {
-            throw new Error('can not find ' + url.getPath());
+            throw new Error('can not found route for: ' + url.getPath());
         }
         else {
             handler.fn.call(handler.thisArg, url.getPath(), query);

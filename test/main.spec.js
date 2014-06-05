@@ -19,7 +19,12 @@ define(function (require) {
                 router.redirect('/');
             }
             catch (e) {
-                hadThrowed = true;
+                if (e.message.indexOf('route') >= 0) {
+                    hadThrowed = true;
+                }
+                else {
+                    throw e;
+                }
             }
 
             expect(hadThrowed).toBeTruthy();
@@ -39,6 +44,27 @@ define(function (require) {
         });
 
         describe('has', function () {
+            it('one handler but not found route, throw exception', function () {
+                var fn = jasmine.createSpy('fn');
+                var exception;
+                router.add('/', fn);
+
+                try {
+                    router.redirect('/index');
+                }
+                catch (e) {
+                    if (e.message.indexOf('route') >= 0) {
+                        exception = true;
+                    }
+                    else {
+                        throw e;
+                    }
+                }
+
+                expect(exception).toBeTruthy();
+                expect(fn).not.toHaveBeenCalled();
+            });
+
             it('one handler, with `thisArg`', function () {
                 var res;
                 var obj = {name: 'saber'};
@@ -143,7 +169,7 @@ define(function (require) {
                     expect(query.ke).toEqual('ww');
                 });
 
-                router.redirect('/~ke=ww', {name: 'treelite'})
+                router.redirect('/~ke=ww', {name: 'treelite'});
             });
 
             it('one handler, with query object and fore', function () {
@@ -187,16 +213,27 @@ define(function (require) {
                 router.redirect('/work/list.action');
 
                 expect(called).toBe(2);
+            });
 
+            it('one handler with RegExp but not found route, throw exception', function () {
+                var fn = jasmine.createSpy('fn');
                 var exception;
+                router.add(/^.*\.action$/, fn);
+
                 try {
-                    router.redirect('/add');
+                    router.redirect('/index');
                 }
                 catch (e) {
-                    exception = true;
+                    if (e.message.indexOf('route') >= 0) {
+                        exception = true;
+                    }
+                    else {
+                        throw e;
+                    }
                 }
 
                 expect(exception).toBeTruthy();
+                expect(fn).not.toHaveBeenCalled();
             });
 
             it('one handler with RegExp and capturing group', function () {
@@ -217,7 +254,7 @@ define(function (require) {
 
                 router.add('/item/:id/comments/:page/re', handler);
 
-                var path = '/item/100/comments/2/re'
+                var path = '/item/100/comments/2/re';
                 router.redirect(path + '~name=saber');
 
                 expect(handler).toHaveBeenCalled();
@@ -403,7 +440,7 @@ define(function (require) {
                 setTimeout(function () {
                     expect(called).toBe(1);
                     done();
-                }, 100)
+                }, 100);
             }, 100);
 
         });
