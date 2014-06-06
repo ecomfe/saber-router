@@ -57,7 +57,7 @@ define(function (require) {
         
         for (var i = 1, name; i < params.length; i++) {
             name = names[i - 1] || '$' + i;
-            res[name] = params[i];
+            res[name] = decodeURIComponent(params[i]);
         }
 
         return res;

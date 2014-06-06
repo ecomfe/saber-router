@@ -6,6 +6,9 @@
 define(function (require) {
     var router = require('saber-router');
 
+    var KEY_DECODE = '中文';
+    var KEY_ENCODE = encodeURIComponent(KEY_DECODE);
+
     describe('router.redirect', function () {
 
         afterEach(function () {
@@ -106,6 +109,15 @@ define(function (require) {
                 router.redirect('/~uid=100');
 
                 expect(called).toBeTruthy();
+            });
+
+            it('one handler with querystring should decode', function () {
+                var called;
+                router.add('/', function (url, query) {
+                    expect(query.name).toEqual(KEY_DECODE);
+                });
+
+                router.redirect('/~name=' + KEY_ENCODE);
             });
 
             it('one handler, multi call with the same path', function () {
@@ -263,6 +275,14 @@ define(function (require) {
                 var query = handler.calls.mostRecent().args[1];
                 expect(url).toBe(path);
                 expect(query).toEqual({id: '100', page: '2', name: 'saber'});
+            });
+
+            it('one RESTful handler, query param should decode', function () {
+                router.add('/item/:name', function (url, query) {
+                    expect(query.name).toEqual(KEY_DECODE);
+                });
+
+                router.redirect('/item/' + KEY_ENCODE);
             });
 
             it('two handlers, called correctly', function () {
