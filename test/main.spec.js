@@ -118,6 +118,7 @@ define(function (require) {
                 });
 
                 router.redirect('/~name=' + KEY_ENCODE);
+                router.redirect('/', {name: KEY_ENCODE});
             });
 
             it('one handler, multi call with the same path', function () {
@@ -282,6 +283,7 @@ define(function (require) {
                     expect(query.name).toEqual(KEY_DECODE);
                 });
 
+                router.redirect('/item/' + KEY_DECODE);
                 router.redirect('/item/' + KEY_ENCODE);
             });
 
