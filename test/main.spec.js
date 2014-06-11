@@ -287,6 +287,30 @@ define(function (require) {
                 router.redirect('/item/' + KEY_ENCODE);
             });
 
+            it('two RESTful handlers', function () {
+                var fn1 = jasmine.createSpy('fn1');
+                var fn2 = jasmine.createSpy('fn2');
+
+                router.add('/item/:id', fn1);
+                router.add('/item/:id/detail', fn2);
+
+                router.redirect('/item/100');
+                expect(fn1).toHaveBeenCalled();
+                expect(fn2).not.toHaveBeenCalled();
+
+                router.redirect('/item/100~name=w');
+                expect(fn1.calls.count()).toBe(2);
+                expect(fn2).not.toHaveBeenCalled();
+
+                router.redirect('/item/100/detail');
+                expect(fn1.calls.count()).toBe(2);
+                expect(fn2).toHaveBeenCalled();
+
+                router.redirect('/item/100/detail~name=w');
+                expect(fn1.calls.count()).toBe(2);
+                expect(fn2.calls.count()).toBe(2);
+            });
+
             it('two handlers, called correctly', function () {
                 var first;
                 var second;

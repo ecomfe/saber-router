@@ -131,7 +131,7 @@ define(function (require) {
             return '([^/~]+)';
         });
 
-        res.path = new RegExp(res.path);
+        res.path = new RegExp(res.path + '(?:~|$)');
 
         return res;
     }
