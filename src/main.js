@@ -57,7 +57,7 @@ define(function (require) {
         
         for (var i = 1, name; i < params.length; i++) {
             name = names[i - 1] || '$' + i;
-            res[name] = params[i];
+            res[name] = decodeURIComponent(params[i]);
         }
 
         return res;
@@ -90,11 +90,11 @@ define(function (require) {
         var query = extend({}, url.getQuery());
 
         rules.some(function (item) {
-            if (item.path instanceof RegExp
-                && item.path.test(url.getPath())
-            ) {
-                handler = item;
-                query = extend(getQueryFromPath(url.getPath(), item), query);
+            if (item.path instanceof RegExp) {
+                if (item.path.test(url.getPath())) {
+                    handler = item;
+                    query = extend(getQueryFromPath(url.getPath(), item), query);
+                }
             }
             else if (url.equalPath(item.path)) {
                 handler = item;
@@ -104,7 +104,7 @@ define(function (require) {
         });
 
         if (!handler) {
-            throw new Error('can not find ' + url.getPath());
+            throw new Error('can not found route for: ' + url.getPath());
         }
         else {
             handler.fn.call(handler.thisArg, url.getPath(), query);
@@ -131,7 +131,7 @@ define(function (require) {
             return '([^/~]+)';
         });
 
-        res.path = new RegExp(res.path);
+        res.path = new RegExp(res.path + '(?:~|$)');
 
         return res;
     }
@@ -185,7 +185,7 @@ define(function (require) {
      *
      * @public
      * @param {Object} options 配置信息
-     * @param {string=} options.root 默认路径
+     * @param {string=} options.path 默认路径
      * @param {string=} options.index index文件名称
      */
     exports.config = function (options) {
