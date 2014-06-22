@@ -39,7 +39,7 @@ router.start();
 添加路由规则
 
 * `path` `{string|RegExp}` 路由路径
-* `fn` `{function(string, Object)}` 路由处理函数
+* `fn` `{function(string, Object, Object)}` 路由处理函数（函数参数分别是：url、查询条件、跳转参数，具体请参考[.redirect(url, query, options)](#redirect-url-query-options-)）
 * `thisArg` `{Object}` 路径处理函数的`this`指针
 
 ### .remove( path )
@@ -50,13 +50,14 @@ router.start();
 
 清除所有路由规则
 
-### .redirect( url, query, force )
+### .redirect( url, query, options )
 
 URL跳转
 
 * `url` `{string}` url
-* `query` `{Object=}` 查询条件
-* `force` `{boolean=}` 是否强制跳转
+* `query` `{?Object}` 查询条件
+* `options` `{options=}` 跳转参数
+* `options.force` `{boolean=}` 是否强制跳转（默认情况下相同URL不跳转）
 
 删除路由规则
 
