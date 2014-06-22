@@ -46,6 +46,23 @@ define(function (require) {
             expect(fn).not.toHaveBeenCalled();
         });
 
+        it('can transfer options', function () {
+            var fn = jasmine.createSpy('fn');
+            var query = {name: 'treelite'};
+            var options = {more: 'str'};
+
+            router.add('/', fn);
+
+            router.redirect('/', null, options);
+
+            expect(fn).toHaveBeenCalled();
+            expect(fn.calls.argsFor(0)).toEqual(['/', {}, options]);
+
+            router.redirect('/', query, options);
+            expect(fn.calls.argsFor(1)).toEqual(['/', query, options]);
+
+        });
+
         describe('has', function () {
             it('one handler but not found route, throw exception', function () {
                 var fn = jasmine.createSpy('fn');
