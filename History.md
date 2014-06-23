@@ -1,3 +1,7 @@
+#0.2.3 / 2014-06-23
+
+* `.redirect`方法增加`options`参数，用于传递路由参数，具体请参考[文档](#redirect-url-query-options-)
+
 #0.2.2 / 2014-06-16
 
 * 对`RESTful`风格的路径参数进行`URI`解码

@@ -72,17 +72,19 @@ define(function (require) {
      * URL跳转
      *
      * @inner
-     * @param {string} url
-     * @param {boolean} force
+     * @param {string|URL} url
+     * @param {Object} options
+     * @param {boolean} options.force
      * @return {Url}
      */
-    function redirect(url, force) {
+    function redirect(url, options) {
+        options = options || {};
 
         if (!(url instanceof URL)) {
             url = createURL(url, null, curLocation);
         }
 
-        if (url.equal(curLocation) && !force) {
+        if (url.equal(curLocation) && !options.force) {
             return url;
         }
 
@@ -107,7 +109,7 @@ define(function (require) {
             throw new Error('can not found route for: ' + url.getPath());
         }
         else {
-            handler.fn.call(handler.thisArg, url.getPath(), query);
+            handler.fn.call(handler.thisArg, url.getPath(), query, options);
         }
 
         curLocation = url;
@@ -237,21 +239,21 @@ define(function (require) {
      * URL跳转
      *
      * @public
-     * @param {string} url
-     * @param {Object=} query
-     * @param {boolean=} force 是否强制跳转
+     * @param {string} url 路径
+     * @param {?Object} query 查询条件
+     * @param {Object=} options 跳转参数
+     * @param {boolean=} options.force 是否强制跳转
      */
-    exports.redirect = function (url, query, force) {
+    exports.redirect = function (url, query, options) {
+        // API向前兼容
+        // 支持 redirect(url, force) 与 redirect(url, query, force)
         var args = Array.prototype.slice.call(arguments);
-        if ('[object Boolean]'
-            == Object.prototype.toString.call(args[args.length - 1])
-        ) {
-            force = args.pop();
+        if ('[object Boolean]' == Object.prototype.toString.call(args[args.length - 1])) {
+            options = {force: args.pop()};
             query = args[1];
         }
-
         url = createURL(url, query, curLocation);
-        redirect(url, force);
+        redirect(url, options);
         location.hash = '#' + url.toString();
     };
 
