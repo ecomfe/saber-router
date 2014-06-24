@@ -160,6 +160,21 @@ define(function (require) {
     }
 
     /**
+     * URL历史替换
+     *
+     * @inner
+     * @param {string} url
+     */
+    function replaceHistory(url) {
+        var href = location.href.split('#')[0];
+        history.replaceState(
+            {}, 
+            document.title, 
+            href + '#' + url
+        );
+    }
+
+    /**
      * hashchange监听
      *
      * @inner
@@ -172,15 +187,23 @@ define(function (require) {
             // 只能替换没法删除
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
-            history.replaceState(
-                {}, 
-                document.title, 
-                href + '#' + url.toString()
-            );
+            replaceHistory(url.toString());
         }
     }
     
     var exports = {};
+
+    /**
+     * 重置当前的URL
+     *
+     * @public
+     * @param {string} url
+     * @param {Object=} query
+     */
+    exports.reset = function (url, query) {
+        curLocation = url = createURL(url, query, curLocation);
+        replaceHistory(url.toString());
+    };
 
     /**
      * 设置配置信息
