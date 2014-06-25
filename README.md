@@ -50,6 +50,10 @@ router.start();
 
 清除所有路由规则
 
+### .reset( url, query )
+
+重置当前的URL，不会触发路由处理
+
 ### .redirect( url, query, options )
 
 URL跳转

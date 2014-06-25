@@ -570,4 +570,37 @@ define(function (require) {
         });
 
     });
+
+
+    describe('router.reset', function () {
+
+        afterEach(function () {
+            router.clear();
+            location.hash = '';
+        });
+
+        it('should reset the current location', function () {
+            var def = jasmine.createSpy('def');
+            var fn = jasmine.createSpy('fn');
+            var query = {name: 'treelite'};
+
+            router.add('/', def);
+            router.add('/fn', fn);
+
+            router.redirect('/', query);
+            expect(def.calls.count()).toBe(1);
+            expect(def.calls.argsFor(0)).toEqual(['/', query, {}]);
+
+            router.reset('/fn');
+            expect(fn.calls.count()).toBe(0);
+
+            router.redirect('/fn');
+            expect(fn.calls.count()).toBe(0);
+
+            router.redirect('/fn', query);
+            expect(fn.calls.count()).toBe(1);
+            expect(fn.calls.argsFor(0)).toEqual(['/fn', query, {}]);
+        });
+
+    });
 });
