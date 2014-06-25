@@ -63,8 +63,6 @@ URL跳转
 * `options` `{options=}` 跳转参数
 * `options.force` `{boolean=}` 是否强制跳转（默认情况下相同URL不跳转）
 
-删除路由规则
-
 ### .start()
 
 启动路由监听
