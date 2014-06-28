@@ -109,7 +109,7 @@ define(function (require) {
             throw new Error('can not found route for: ' + url.getPath());
         }
         else {
-            handler.fn.call(handler.thisArg, url.getPath(), query, options);
+            handler.fn.call(handler.thisArg, url.getPath(), query, url.toString(), options);
         }
 
         curLocation = url;

@@ -46,7 +46,7 @@ define(function (require) {
             expect(fn).not.toHaveBeenCalled();
         });
 
-        it('can transfer options', function () {
+        it('can transfer path, query, url and options', function () {
             var fn = jasmine.createSpy('fn');
             var query = {name: 'treelite'};
             var options = {more: 'str'};
@@ -56,10 +56,10 @@ define(function (require) {
             router.redirect('/', null, options);
 
             expect(fn).toHaveBeenCalled();
-            expect(fn.calls.argsFor(0)).toEqual(['/', {}, options]);
+            expect(fn.calls.argsFor(0)).toEqual(['/', {}, '/', options]);
 
             router.redirect('/', query, options);
-            expect(fn.calls.argsFor(1)).toEqual(['/', query, options]);
+            expect(fn.calls.argsFor(1)).toEqual(['/', query, '/~name=treelite', options]);
 
         });
 
@@ -589,7 +589,8 @@ define(function (require) {
 
             router.redirect('/', query);
             expect(def.calls.count()).toBe(1);
-            expect(def.calls.argsFor(0)).toEqual(['/', query, {}]);
+            expect(def.calls.argsFor(0)[0]).toEqual('/');
+            expect(def.calls.argsFor(0)[1]).toEqual(query);
 
             router.reset('/fn');
             expect(fn.calls.count()).toBe(0);
@@ -599,7 +600,8 @@ define(function (require) {
 
             router.redirect('/fn', query);
             expect(fn.calls.count()).toBe(1);
-            expect(fn.calls.argsFor(0)).toEqual(['/fn', query, {}]);
+            expect(fn.calls.argsFor(0)[0]).toEqual('/fn');
+            expect(fn.calls.argsFor(0)[1]).toEqual(query);
         });
 
     });
