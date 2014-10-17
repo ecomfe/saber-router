@@ -33,7 +33,28 @@ define(function (require) {
             expect(hadThrowed).toBeTruthy();
         });
 
-        it('defualt index is empty', function () {
+        it('default handler', function () {
+            var fn = jasmine.createSpy('fn');
+            var handler = jasmine.createSpy('handler');
+            var error;
+
+            router.add('', fn);
+            router.add('/test', handler);
+
+            try {
+                router.redirect('/test');
+                router.redirect('/');
+            }
+            catch (e) {
+                error = true;
+            }
+
+            expect(fn).toHaveBeenCalled();
+            expect(handler).toHaveBeenCalled();
+            expect(error).toBeFalsy();
+        });
+
+        it('default index is empty', function () {
             var fn = jasmine.createSpy('fn');
 
             router.add('/index', fn);

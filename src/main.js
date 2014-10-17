@@ -89,6 +89,7 @@ define(function (require) {
         }
 
         var handler;
+        var defHandler;
         var query = extend({}, url.getQuery());
 
         rules.some(function (item) {
@@ -102,8 +103,14 @@ define(function (require) {
                 handler = item;
             }
 
+            if (!item.path) {
+                defHandler = item;
+            }
+
             return !!handler;
         });
+
+        handler = handler || defHandler;
 
         if (!handler) {
             throw new Error('can not found route for: ' + url.getPath());
