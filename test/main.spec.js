@@ -38,8 +38,8 @@ define(function (require) {
             var handler = jasmine.createSpy('handler');
             var error;
 
-            router.add('', fn);
             router.add('/test', handler);
+            router.add('', fn);
 
             try {
                 router.redirect('/test');
@@ -65,6 +65,22 @@ define(function (require) {
             catch (e) {}
 
             expect(fn).not.toHaveBeenCalled();
+        });
+
+        it('support silent redirect', function () {
+            var fn1 = jasmine.createSpy('fn1');
+            var fn2 = jasmine.createSpy('fn2');
+
+            router.add('/', fn1);
+            router.add('/test', fn2);
+
+            router.redirect('/');
+            expect(fn1).toHaveBeenCalled();
+            expect(location.hash).toEqual('#/');
+
+            router.redirect('/test', null, { silent: true });
+            expect(fn2).toHaveBeenCalled()
+            expect(location.hash).toEqual('#/');
         });
 
         it('can transfer path, query, url and options', function () {
@@ -564,6 +580,8 @@ define(function (require) {
 
             expect(defCalled).toBeFalsy();
             expect(called).toBeTruthy();
+
+            router.stop();
         });
 
         it('use `router.config` to set index name', function () {

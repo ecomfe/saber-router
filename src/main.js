@@ -273,6 +273,7 @@ define(function (require) {
      * @param {?Object} query 查询条件
      * @param {Object=} options 跳转参数
      * @param {boolean=} options.force 是否强制跳转
+     * @param {boolean=} options.silent 是否静默跳转（不改变hash）
      */
     exports.redirect = function (url, query, options) {
         // API向前兼容
@@ -284,7 +285,9 @@ define(function (require) {
         }
         url = createURL(url, query, curLocation);
         redirect(url, options);
-        location.hash = '#' + url.toString();
+        if (!options || !options.silent) {
+            location.hash = '#' + url.toString();
+        }
     };
 
     /**
