@@ -21,7 +21,7 @@ define(function (require) {
      * @return {string}
      */
     function normalPath(path) {
-        if (path.charAt(path.length - 1) == '/') {
+        if (path.charAt(path.length - 1) === '/') {
             path += config.index;
         }
         return path;
@@ -41,7 +41,7 @@ define(function (require) {
         var base = options.base || {};
 
         str = str.trim();
-        if (str.charAt(0) == '#') {
+        if (str.charAt(0) === '#') {
             str = str.substring(1);
         }
 
@@ -78,7 +78,7 @@ define(function (require) {
         var myPath = normalPath(this.path.get());
         path = normalPath(path);
 
-        return myPath == path;
+        return myPath === path;
     };
 
     /**

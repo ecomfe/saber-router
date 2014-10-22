@@ -35,10 +35,10 @@ define(function (require) {
 
         rules.some(function (item, i) {
             // toString是为了判断正则是否相等
-            if (item.path.toString() == path.toString()) {
+            if (item.path.toString() === path.toString()) {
                 index = i;
             }
-            return index != -1;
+            return index !== -1;
         });
 
         return index;
@@ -54,7 +54,7 @@ define(function (require) {
         var res = {};
         var names = item.params || [];
         var params = path.match(item.path) || [];
-        
+
         for (var i = 1, name; i < params.length; i++) {
             name = names[i - 1] || '$' + i;
             res[name] = decodeURIComponent(params[i]);
@@ -157,7 +157,7 @@ define(function (require) {
                 thisArg: thisArg
             };
 
-        if (!(path instanceof RegExp) 
+        if (!(path instanceof RegExp)
             && path.indexOf(':') >= 0
         ) {
             rule = extend(rule, restful(path));
@@ -175,8 +175,8 @@ define(function (require) {
     function replaceHistory(url) {
         var href = location.href.split('#')[0];
         history.replaceState(
-            {}, 
-            document.title, 
+            {},
+            document.title,
             href + '#' + url
         );
     }
@@ -190,14 +190,13 @@ define(function (require) {
         var url = redirect(location.hash);
 
         if (url.isRelative) {
-            var href = location.href.split('#')[0];
             // 只能替换没法删除
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
             replaceHistory(url.toString());
         }
     }
-    
+
     var exports = {};
 
     /**
@@ -279,7 +278,7 @@ define(function (require) {
         // API向前兼容
         // 支持 redirect(url, force) 与 redirect(url, query, force)
         var args = Array.prototype.slice.call(arguments);
-        if ('[object Boolean]' == Object.prototype.toString.call(args[args.length - 1])) {
+        if ('[object Boolean]' === Object.prototype.toString.call(args[args.length - 1])) {
             options = {force: args.pop()};
             query = args[1];
         }
