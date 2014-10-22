@@ -174,11 +174,7 @@ define(function (require) {
      */
     function replaceHistory(url) {
         var href = location.href.split('#')[0];
-        history.replaceState(
-            {},
-            document.title,
-            href + '#' + url
-        );
+        location.replace(href + '#' + url);
     }
 
     /**
@@ -190,7 +186,7 @@ define(function (require) {
         var url = redirect(location.hash);
 
         if (url.isRelative) {
-            // 只能替换没法删除
+            // 只能替换当次的历史记录，没法删除之前一次的记录
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
             replaceHistory(url.toString());

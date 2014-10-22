@@ -500,22 +500,21 @@ define(function (require) {
         });
 
         it('relative path', function (done) {
-            var called;
+            var fn = jasmine.createSpy();
 
             router.config({
                 path: '/work/list'
             });
             router.add('/work/list', function () {});
-            router.add('/index', function () {
-                called = true;
-            });
+            router.add('/index', fn);
 
             router.start();
 
             location.hash = '#./../index';
 
             setTimeout(function () {
-                expect(called).toBeTruthy(); 
+                expect(fn.calls.count()).toBe(1);
+                expect(location.hash).toEqual('#/index');
                 router.config({
                     path: '/'
                 });
