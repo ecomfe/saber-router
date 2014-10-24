@@ -234,9 +234,9 @@ define(function (require) {
      * 添加路由规则
      *
      * @public
-     * @param {string|RegExp} path
+     * @param {string|RegExp=} path
      * @param {function(path, query)} fn
-     * @param {Object} thisArg
+     * @param {Object=} thisArg
      */
     exports.add = function (path, fn, thisArg) {
         if (indexOfHandler(path) >= 0) {
