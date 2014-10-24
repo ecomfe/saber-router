@@ -201,9 +201,18 @@ define(function (require) {
      * @public
      * @param {string} url
      * @param {Object=} query
+     * @param {Object=} options
+     * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
-    exports.reset = function (url, query) {
-        curLocation = url = createURL(url, query, curLocation);
+    exports.reset = function (url, query, options) {
+        options = options || {};
+        if (options.silent) {
+            curLocation = url = createURL(url, query, curLocation);
+        }
+        else {
+            options.silent = true;
+            exports.redirect(url, query, options);
+        }
         replaceHistory(url.toString());
     };
 

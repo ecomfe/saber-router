@@ -631,15 +631,30 @@ define(function (require) {
             expect(def.calls.argsFor(0)[1]).toEqual(query);
 
             router.reset('/fn');
-            expect(fn.calls.count()).toBe(0);
+            expect(fn.calls.count()).toBe(1);
+            expect(location.hash).toEqual('#/fn');
 
             router.redirect('/fn');
-            expect(fn.calls.count()).toBe(0);
+            expect(fn.calls.count()).toBe(1);
 
             router.redirect('/fn', query);
-            expect(fn.calls.count()).toBe(1);
-            expect(fn.calls.argsFor(0)[0]).toEqual('/fn');
-            expect(fn.calls.argsFor(0)[1]).toEqual(query);
+            expect(fn.calls.count()).toBe(2);
+            expect(fn.calls.argsFor(1)[0]).toEqual('/fn');
+            expect(fn.calls.argsFor(1)[1]).toEqual(query);
+        });
+
+        it('support silent reset', function () {
+            var def = jasmine.createSpy('def');
+            var fn = jasmine.createSpy('fn');
+
+            router.add('/', def);
+            router.add('/fn', fn);
+
+            router.redirect('/');
+
+            router.reset('/fn', null, {silent: true});
+            expect(location.hash).toEqual('#/fn');
+            expect(fn.calls.count()).toEqual(0);
         });
 
     });
