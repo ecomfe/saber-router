@@ -35,10 +35,10 @@ define(function (require) {
 
         rules.some(function (item, i) {
             // toString是为了判断正则是否相等
-            if (item.path.toString() == path.toString()) {
+            if (item.path.toString() === path.toString()) {
                 index = i;
             }
-            return index != -1;
+            return index !== -1;
         });
 
         return index;
@@ -54,7 +54,7 @@ define(function (require) {
         var res = {};
         var names = item.params || [];
         var params = path.match(item.path) || [];
-        
+
         for (var i = 1, name; i < params.length; i++) {
             name = names[i - 1] || '$' + i;
             res[name] = decodeURIComponent(params[i]);
@@ -89,6 +89,7 @@ define(function (require) {
         }
 
         var handler;
+        var defHandler;
         var query = extend({}, url.getQuery());
 
         rules.some(function (item) {
@@ -102,14 +103,20 @@ define(function (require) {
                 handler = item;
             }
 
+            if (!item.path) {
+                defHandler = item;
+            }
+
             return !!handler;
         });
+
+        handler = handler || defHandler;
 
         if (!handler) {
             throw new Error('can not found route for: ' + url.getPath());
         }
         else {
-            handler.fn.call(handler.thisArg, url.getPath(), query, options);
+            handler.fn.call(handler.thisArg, url.getPath(), query, url.toString(), options);
         }
 
         curLocation = url;
@@ -150,7 +157,7 @@ define(function (require) {
                 thisArg: thisArg
             };
 
-        if (!(path instanceof RegExp) 
+        if (!(path instanceof RegExp)
             && path.indexOf(':') >= 0
         ) {
             rule = extend(rule, restful(path));
@@ -167,11 +174,7 @@ define(function (require) {
      */
     function replaceHistory(url) {
         var href = location.href.split('#')[0];
-        history.replaceState(
-            {}, 
-            document.title, 
-            href + '#' + url
-        );
+        location.replace(href + '#' + url);
     }
 
     /**
@@ -183,14 +186,13 @@ define(function (require) {
         var url = redirect(location.hash);
 
         if (url.isRelative) {
-            var href = location.href.split('#')[0];
-            // 只能替换没法删除
+            // 只能替换当次的历史记录，没法删除之前一次的记录
             // 遇到相对路径跳转当前页的情况就没辙了
             // 会导致有两次相同路径的历史条目...
             replaceHistory(url.toString());
         }
     }
-    
+
     var exports = {};
 
     /**
@@ -199,9 +201,18 @@ define(function (require) {
      * @public
      * @param {string} url
      * @param {Object=} query
+     * @param {Object=} options
+     * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
-    exports.reset = function (url, query) {
-        curLocation = url = createURL(url, query, curLocation);
+    exports.reset = function (url, query, options) {
+        options = options || {};
+        if (options.silent) {
+            curLocation = url = createURL(url, query, curLocation);
+        }
+        else {
+            options.silent = true;
+            exports.redirect(url, query, options);
+        }
         replaceHistory(url.toString());
     };
 
@@ -223,9 +234,9 @@ define(function (require) {
      * 添加路由规则
      *
      * @public
-     * @param {string|RegExp} path
+     * @param {string|RegExp=} path
      * @param {function(path, query)} fn
-     * @param {Object} thisArg
+     * @param {Object=} thisArg
      */
     exports.add = function (path, fn, thisArg) {
         if (indexOfHandler(path) >= 0) {
@@ -266,18 +277,21 @@ define(function (require) {
      * @param {?Object} query 查询条件
      * @param {Object=} options 跳转参数
      * @param {boolean=} options.force 是否强制跳转
+     * @param {boolean=} options.silent 是否静默跳转（不改变hash）
      */
     exports.redirect = function (url, query, options) {
         // API向前兼容
         // 支持 redirect(url, force) 与 redirect(url, query, force)
         var args = Array.prototype.slice.call(arguments);
-        if ('[object Boolean]' == Object.prototype.toString.call(args[args.length - 1])) {
+        if ('[object Boolean]' === Object.prototype.toString.call(args[args.length - 1])) {
             options = {force: args.pop()};
             query = args[1];
         }
         url = createURL(url, query, curLocation);
         redirect(url, options);
-        location.hash = '#' + url.toString();
+        if (!options || !options.silent) {
+            location.hash = '#' + url.toString();
+        }
     };
 
     /**

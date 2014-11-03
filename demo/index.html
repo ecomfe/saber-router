@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Demo</title>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-8-6/esl.js"></script>
+    <script>
+        require.config({
+            packages: [
+                {
+                    name: 'saber-router',
+                    location: '../src'
+                },
+                {
+                    name: 'saber-lang',
+                    location: 'dep/saber-lang/1.0.0/src'
+                },
+                {
+                    name: 'saber-uri',
+                    location: 'dep/saber-uri/1.0.0/src'
+                }
+            ]
+        });
+    </script>
+</head>
+<body>
+    <h1>Helle</h1>
+    <div id="content"></div>
+    <p><a id="btn">返回</a></p>
+    <ul>
+        <li><a href="#/product">product</a></li>
+        <li><a href="#/list/100">list/100</a></li>
+    </ul>
+    <script>
+        require(['saber-router'], function (router) {
+            var content = document.getElementById('content');
+
+            document.getElementById('btn').onclick = function () {
+                history.back();
+            };
+            
+            function index(path, query, url) {
+                console.log(path, query, url);
+                content.innerHTML = 'home page';
+            }
+
+            function product(path, query, url) {
+                console.log(path, query, url);
+                content.innerHTML = 'product page';
+            }
+
+            function list(path, query, url) {
+                console.log(path, query, url);
+                content.innerHTML = 'list ' + query.id;
+            }
+
+            router.add('/', index);
+            router.add('/product', product);
+            router.add('/list/:id', list);
+
+            router.start();
+        });
+    </script>
+</body>
+</html>
