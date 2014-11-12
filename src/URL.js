@@ -7,9 +7,8 @@ define(function (require) {
 
     var Path = require('saber-uri/component/Path');
     var Query = require('saber-uri/component/Query');
+    var Fragment = require('saber-uri/component/Fragment');
     var config = require('./config');
-
-    var QUERY_SPLIT = '~';
 
     /**
      * normal path
@@ -41,18 +40,11 @@ define(function (require) {
         var base = options.base || {};
 
         str = str.trim();
-        if (str.charAt(0) === '#') {
-            str = str.substring(1);
-        }
-
-        str = str.split(QUERY_SPLIT);
-
-        var path = str[0].trim();
-        this.isRelative = path.charAt(0) !== '/';
-        this.path = new Path(path, base.path);
-
-        var queryStr = str[1] && str[1].trim();
-        this.query = new Query(queryStr || '');
+        str = str.split('#');
+        this.fragment = new Fragment(str[1]);
+        str = str[0].split('?');
+        this.path = new Path(str[0], base.path);
+        this.query = new Query(str[1]);
         if (options.query) {
             this.query.add(options.query);
         }
@@ -65,7 +57,9 @@ define(function (require) {
      * @return {string}
      */
     URL.prototype.toString = function () {
-        return this.path.toString() + this.query.toString(QUERY_SPLIT);
+        return this.path.toString()
+            + this.query.toString()
+            + this.fragment.toString();
     };
 
     /**
@@ -93,6 +87,11 @@ define(function (require) {
             && this.equalPath(url.path.get());
     };
 
+    URL.prototype.equalWithFragment = function (url) {
+        return this.equal(url)
+            && this.fragment.equal(url.fragment);
+    };
+
     /**
      * 获取查询条件
      *
@@ -101,17 +100,6 @@ define(function (require) {
      */
     URL.prototype.getQuery = function () {
         return this.query.get();
-    };
-
-    /**
-     * 添加查询条件
-     *
-     * @public
-     * @param {string|Object} key
-     * @param {string} value
-     */
-    URL.prototype.addQuery = function (key, value) {
-        this.query.add(key, value);
     };
 
     /**

@@ -12,7 +12,7 @@ define(function (require) {
     /**
      * 当前路径
      *
-     * @type {Object}
+     * @type {URL}
      */
     var curLocation = {};
 
@@ -64,7 +64,6 @@ define(function (require) {
     }
 
     function createURL(url, query, base) {
-        url = url || config.path;
         return new URL(url, {query: query, base: base});
     }
 
@@ -72,20 +71,16 @@ define(function (require) {
      * URL跳转
      *
      * @inner
-     * @param {string|URL} url
+     * @param {URL} url
      * @param {Object} options
-     * @param {boolean} options.force
-     * @return {Url}
+     * @param {boolean=} options.force
+     * @param {string=} options.title
      */
     function redirect(url, options) {
         options = options || {};
 
-        if (!(url instanceof URL)) {
-            url = createURL(url, null, curLocation);
-        }
-
         if (url.equal(curLocation) && !options.force) {
-            return url;
+            return;
         }
 
         var handler;
@@ -119,9 +114,10 @@ define(function (require) {
             handler.fn.call(handler.thisArg, url.getPath(), query, url.toString(), options);
         }
 
+        if (options.title) {
+            document.title = options.title;
+        }
         curLocation = url;
-
-        return url;
     }
 
     /**
@@ -166,15 +162,15 @@ define(function (require) {
         rules.push(rule);
     }
 
-    /**
-     * URL历史替换
-     *
-     * @inner
-     * @param {string} url
-     */
-    function replaceHistory(url) {
-        var href = location.href.split('#')[0];
-        location.replace(href + '#' + url);
+    function getURL() {
+        var res = location.pathname;
+        if (location.search.length > 1) {
+            res += location.search;
+        }
+        if (location.hash.length > 1) {
+            res += location.hash;
+        }
+        return res;
     }
 
     /**
@@ -182,15 +178,9 @@ define(function (require) {
      *
      * @inner
      */
-    function monitor() {
-        var url = redirect(location.hash);
-
-        if (url.isRelative) {
-            // 只能替换当次的历史记录，没法删除之前一次的记录
-            // 遇到相对路径跳转当前页的情况就没辙了
-            // 会导致有两次相同路径的历史条目...
-            replaceHistory(url.toString());
-        }
+    function monitor(e) {
+        var url = createURL(getURL(), null, curLocation);
+        redirect(url, e.state);
     }
 
     var exports = {};
@@ -206,14 +196,15 @@ define(function (require) {
      */
     exports.reset = function (url, query, options) {
         options = options || {};
+        url = createURL(url, query, curLocation);
         if (options.silent) {
-            curLocation = url = createURL(url, query, curLocation);
+            curLocation = url;
         }
         else {
-            options.silent = true;
-            exports.redirect(url, query, options);
+            redirect(url, options);
         }
-        replaceHistory(url.toString());
+        options.url = url;
+        history.replaceState(options, options.title, url.toString());
     };
 
     /**
@@ -276,10 +267,12 @@ define(function (require) {
      * @param {string} url 路径
      * @param {?Object} query 查询条件
      * @param {Object=} options 跳转参数
+     * @param {string=} options.title 跳转后页面的title
      * @param {boolean=} options.force 是否强制跳转
      * @param {boolean=} options.silent 是否静默跳转（不改变hash）
      */
     exports.redirect = function (url, query, options) {
+        options = options || {};
         // API向前兼容
         // 支持 redirect(url, force) 与 redirect(url, query, force)
         var args = Array.prototype.slice.call(arguments);
@@ -287,10 +280,12 @@ define(function (require) {
             options = {force: args.pop()};
             query = args[1];
         }
+
         url = createURL(url, query, curLocation);
+        var changed = !url.equalWithFragment(curLocation);
         redirect(url, options);
-        if (!options || !options.silent) {
-            location.hash = '#' + url.toString();
+        if (!options.silent && (options.force || changed)) {
+            history.pushState({title: options.title}, options.title, url.toString());
         }
     };
 
@@ -300,9 +295,9 @@ define(function (require) {
      * @public
      */
     exports.start = function () {
-        window.addEventListener('hashchange', monitor, false);
+        window.addEventListener('popstate', monitor, true);
 
-        exports.redirect(location.hash);
+        exports.redirect(getURL(), null, {silent: true});
     };
 
     /**
@@ -311,7 +306,7 @@ define(function (require) {
      * @public
      */
     exports.stop = function () {
-        window.removeEventListener('hashchange', monitor, false);
+        window.removeEventListener('popstate', monitor, true);
     };
 
     return exports;

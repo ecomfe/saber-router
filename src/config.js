@@ -11,14 +11,7 @@ define(function () {
          *
          * @type {string}
          */
-        index: '',
-
-        /**
-         * 默认路径
-         *
-         * @type (string)
-         */
-        path: '/'
+        index: ''
     };
 
 });
