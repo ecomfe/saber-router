@@ -10,8 +10,9 @@
     }
   ],
   "scripts": {
-    "pretest": "node -e \"$(curl -sf http://saberlabs.github.io/static/test/depend.js)\"",
-    "test": "phantomjs test/run-jasmine.js test/runner.html"
+    "pretest": "node -e \"$(curl -sf http://saberlabs.github.io/static/test/depend.js)\";node test/ws.js start",
+    "test": "phantomjs test/run-jasmine.js http://localhost:8848/test/runner.html",
+    "posttest": "node test/ws.js stop"
   },
   "dependencies": {
     "saber-lang": "~1.0.0",
