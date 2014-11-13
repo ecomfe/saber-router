@@ -63,6 +63,15 @@ define(function (require) {
         return res;
     }
 
+    /**
+     * 创建URL对象
+     *
+     * @inner
+     * @param {string} url
+     * @param {Object} query
+     * @param {URL} base
+     * @return {URL}
+     */
     function createURL(url, query, base) {
         return new URL(url, {query: query, base: base});
     }
@@ -162,6 +171,11 @@ define(function (require) {
         rules.push(rule);
     }
 
+    /**
+     * 获取当前页面的URL
+     *
+     * @return {string}
+     */
     function getURL() {
         var res = location.pathname;
         if (location.search.length > 1) {
@@ -181,6 +195,26 @@ define(function (require) {
     function monitor(e) {
         var url = createURL(getURL(), null, curLocation);
         redirect(url, e.state);
+    }
+
+    /**
+     * 劫持click
+     * 取消默认行为改为调用redirect
+     *
+     * @inner
+     * @param {Event} e
+     */
+    function hackClick(e) {
+        var target = e.target;
+        if (target.tagName != 'A') {
+            return;
+        }
+
+        var href = target.getAttribute('href');
+        if (href && href.charAt(0) != '#') {
+            exports.redirect(href);
+            e.preventDefault();
+        }
     }
 
     var exports = {};
@@ -283,8 +317,10 @@ define(function (require) {
 
         url = createURL(url, query, curLocation);
         var changed = !url.equalWithFragment(curLocation);
+
         redirect(url, options);
-        if (!options.silent && (options.force || changed)) {
+
+        if (!options.silent && changed) {
             history.pushState({title: options.title}, options.title, url.toString());
         }
     };
@@ -295,7 +331,8 @@ define(function (require) {
      * @public
      */
     exports.start = function () {
-        window.addEventListener('popstate', monitor, true);
+        window.addEventListener('popstate', monitor, false);
+        document.body.addEventListener('click', hackClick, false);
 
         exports.redirect(getURL(), null, {silent: true});
     };
@@ -306,7 +343,8 @@ define(function (require) {
      * @public
      */
     exports.stop = function () {
-        window.removeEventListener('popstate', monitor, true);
+        window.removeEventListener('popstate', monitor, false);
+        document.body.removeEventListener('click', hackClick, false);
     };
 
     return exports;
