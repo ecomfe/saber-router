@@ -19,21 +19,27 @@
                 {
                     name: 'saber-uri',
                     location: 'dep/saber-uri/1.0.0/src'
+                },
+                {
+                    name: 'saber-tap',
+                    location: 'dep/saber-tap/1.0.0/src',
+                    main: 'tap'
                 }
             ]
         });
     </script>
 </head>
 <body>
-    <h1>Helle</h1>
+    <h1>Hello</h1>
     <div id="content"></div>
     <p><a id="btn">返回</a></p>
     <ul>
-        <li><a href="#/product">product</a></li>
-        <li><a href="#/list/100">list/100</a></li>
+        <li><a href="/demo/product">product</a></li>
+        <li><a href="/demo/list/100">list/100</a></li>
     </ul>
     <script>
-        require(['saber-router'], function (router) {
+        require(['saber-router', 'saber-tap'], function (router, Tap) {
+            Tap.mixin(document.body);
             var content = document.getElementById('content');
 
             document.getElementById('btn').onclick = function () {
@@ -55,9 +61,9 @@
                 content.innerHTML = 'list ' + query.id;
             }
 
-            router.add('/', index);
-            router.add('/product', product);
-            router.add('/list/:id', list);
+            router.add('/demo/index.html', index);
+            router.add('/demo/product', product);
+            router.add('/demo/list/:id', list);
 
             router.start();
         });
