@@ -206,7 +206,21 @@ define(function (require) {
      */
     function hackClick(e) {
         var target = e.target;
-        if (target.tagName != 'A') {
+        if (e.path) {
+            for (var i = 0, item; item = e.path[i]; i++) {
+                if (item.tagName === 'A') {
+                    target = item;
+                    break;
+                }
+            }
+        }
+        else {
+            while (target && target.tagName !== 'A') {
+                target = target.parentNode;
+            }
+        }
+
+        if (!target) {
             return;
         }
 
