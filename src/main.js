@@ -137,15 +137,15 @@ define(function (require) {
      */
     function restful(path) {
         var res = {
-                params: []
-            };
+            params: []
+        };
 
-        res.path = path.replace(/:([^/~]+)/g, function ($0, $1) {
+        res.path = path.replace(/:([^/]+)/g, function ($0, $1) {
             res.params.push($1);
-            return '([^/~]+)';
+            return '([^/]+)';
         });
 
-        res.path = new RegExp(res.path + '(?:~|$)');
+        res.path = new RegExp(res.path + '$');
 
         return res;
     }
@@ -225,7 +225,7 @@ define(function (require) {
         }
 
         var href = target.getAttribute('href');
-        if (href && href.charAt(0) != '#') {
+        if (href && href.charAt(0) !== '#') {
             exports.redirect(href);
             e.preventDefault();
         }

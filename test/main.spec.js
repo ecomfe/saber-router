@@ -335,6 +335,16 @@ define(function (require) {
                 expect(url).toBe(path);
                 expect(query).toEqual({id: '100', page: '2', name: 'saber'});
             });
+            
+            it('RESTful with query', function () {
+                var handler = jasmine.createSpy('handler');
+                router.add('/item/:id', handler);
+
+                router.redirect('/item/100?k=n');
+                var query = handler.calls.mostRecent().args[1];
+                expect(handler).toHaveBeenCalled();
+                expect(query).toEqual({id: '100', k: 'n'});
+            });
 
             it('one RESTful handler, query param should decode', function () {
                 router.add('/item/:name', function (url, query) {
