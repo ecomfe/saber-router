@@ -198,6 +198,27 @@ define(function (require) {
     }
 
     /**
+     * 获取本页内的跳转URL
+     * 如果没有获取就返回undefined
+     *
+     * @inner
+     * @param {HTMLElement} ele
+     * @return {string=}
+     */
+    function getLinkInUrl(ele) {
+        var target = ele.getAttribute('target');
+        var href = ele.getAttribute('href');
+        var res;
+
+        if (!href || (target && target !== '_self')) {
+            return res;
+        }
+
+        res = href.charAt(0) !== '#' && href.indexOf(':') < 0 && href;
+        return res;
+    }
+
+    /**
      * 劫持click
      * 取消默认行为改为调用redirect
      *
@@ -224,8 +245,8 @@ define(function (require) {
             return;
         }
 
-        var href = target.getAttribute('href');
-        if (href && href.charAt(0) !== '#') {
+        var href = getLinkInUrl(target);
+        if (href) {
             exports.redirect(href);
             e.preventDefault();
         }
