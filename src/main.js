@@ -6,8 +6,32 @@
 define(function (require) {
 
     var extend = require('saber-lang/extend');
+    var env = require('saber-env');
     var URL = require('./URL');
     var config = require('./config');
+
+    /**
+     * 判断浏览器版本是否不满足基本要求
+     * android >= 4.2
+     * iOS >= 6.0
+     *
+     * @type {boolean}
+     */
+    var tooLow = (function () {
+        var os = env.os;
+        var res = false;
+        var minVersion = {
+            android: 4.2,
+            ios: 6.0
+        };
+
+        Object.keys(minVersion).forEach(function (name) {
+            var mver = minVersion[name];
+            res = mver && parseFloat(os.version) < mver;
+        });
+
+        return res;
+    })();
 
     /**
      * 当前路径
@@ -264,6 +288,10 @@ define(function (require) {
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {
+        if (tooLow) {
+            return exports.redirect(url, query);
+        }
+
         options = options || {};
         url = createURL(url, query, curLocation);
         if (options.silent) {
@@ -338,7 +366,7 @@ define(function (require) {
      * @param {Object=} options 跳转参数
      * @param {string=} options.title 跳转后页面的title
      * @param {boolean=} options.force 是否强制跳转
-     * @param {boolean=} options.silent 是否静默跳转（不改变hash）
+     * @param {boolean=} options.silent 是否静默跳转（不改变URL）
      */
     exports.redirect = function (url, query, options) {
         options = options || {};
@@ -351,8 +379,17 @@ define(function (require) {
         }
 
         url = createURL(url, query, curLocation);
-        var changed = !url.equalWithFragment(curLocation);
 
+        if (tooLow && options.silent) {
+            redirect(url, options);
+            return;
+        }
+        else if (tooLow) {
+            location.href = url.toString();
+            return;
+        }
+
+        var changed = !url.equalWithFragment(curLocation);
         redirect(url, options);
 
         if (!options.silent && changed) {
@@ -366,10 +403,13 @@ define(function (require) {
      * @public
      */
     exports.start = function () {
-        window.addEventListener('popstate', monitor, false);
-        document.body.addEventListener('click', hackClick, false);
+        if (!tooLow) {
+            window.addEventListener('popstate', monitor, false);
+            document.body.addEventListener('click', hackClick, false);
+        }
 
-        exports.redirect(getURL(), null, {silent: true});
+        var url = createURL(getURL());
+        redirect(url);
     };
 
     /**
@@ -378,8 +418,10 @@ define(function (require) {
      * @public
      */
     exports.stop = function () {
-        window.removeEventListener('popstate', monitor, false);
-        document.body.removeEventListener('click', hackClick, false);
+        if (!tooLow) {
+            window.removeEventListener('popstate', monitor, false);
+            document.body.removeEventListener('click', hackClick, false);
+        }
     };
 
     return exports;

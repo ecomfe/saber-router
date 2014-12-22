@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "saber-lang": "~1.0.0",
-    "saber-uri": "~1.0.0"
+    "saber-uri": "~1.0.0",
+    "saber-env": "~1.0.0"
   },
   "devDependencies": {
     "phantomjs": "~1.9.7-1"
