@@ -3,7 +3,9 @@
  * @author treelite(c.xinle@gmail.com)
  */
 
-define(function () {
+define(function (require) {
+
+    var env = require('saber-env');
 
     return {
         /**
@@ -11,7 +13,28 @@ define(function () {
          *
          * @type {string}
          */
-        index: ''
+        index: '',
+
+        /**
+         * 是否禁用前端路由跳转
+         *
+         * @type {boolean}
+         */
+        disabled: (function () {
+            var os = env.os;
+            var res = false;
+            var minVersion = {
+                android: 4.2,
+                ios: 6.0
+            };
+
+            Object.keys(minVersion).forEach(function (name) {
+                var mver = minVersion[name];
+                res = mver && parseFloat(os.version) < mver;
+            });
+
+            return res;
+        })()
     };
 
 });

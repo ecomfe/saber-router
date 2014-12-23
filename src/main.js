@@ -6,32 +6,8 @@
 define(function (require) {
 
     var extend = require('saber-lang/extend');
-    var env = require('saber-env');
     var URL = require('./URL');
-    var config = require('./config');
-
-    /**
-     * 判断浏览器版本是否不满足基本要求
-     * android >= 4.2
-     * iOS >= 6.0
-     *
-     * @type {boolean}
-     */
-    var tooLow = (function () {
-        var os = env.os;
-        var res = false;
-        var minVersion = {
-            android: 4.2,
-            ios: 6.0
-        };
-
-        Object.keys(minVersion).forEach(function (name) {
-            var mver = minVersion[name];
-            res = mver && parseFloat(os.version) < mver;
-        });
-
-        return res;
-    })();
+    var globalConfig = require('./config');
 
     /**
      * 当前路径
@@ -288,7 +264,7 @@ define(function (require) {
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {
-        if (tooLow) {
+        if (globalConfig.disabled) {
             return exports.redirect(url, query);
         }
 
@@ -315,7 +291,7 @@ define(function (require) {
     exports.config = function (options) {
         options = options || {};
 
-        extend(config, options);
+        extend(globalConfig, options);
     };
 
     /**
@@ -380,11 +356,11 @@ define(function (require) {
 
         url = createURL(url, query, curLocation);
 
-        if (tooLow && options.silent) {
+        if (globalConfig.disabled && options.silent) {
             redirect(url, options);
             return;
         }
-        else if (tooLow) {
+        else if (globalConfig.disabled) {
             location.href = url.toString();
             return;
         }
@@ -401,9 +377,11 @@ define(function (require) {
      * 启动路由监控
      *
      * @public
+     * @param {Object} options 配置项
      */
-    exports.start = function () {
-        if (!tooLow) {
+    exports.start = function (options) {
+        exports.config(options);
+        if (!globalConfig.disabled) {
             window.addEventListener('popstate', monitor, false);
             document.body.addEventListener('click', hackClick, false);
         }
@@ -418,7 +396,7 @@ define(function (require) {
      * @public
      */
     exports.stop = function () {
-        if (!tooLow) {
+        if (!globalConfig.disabled) {
             window.removeEventListener('popstate', monitor, false);
             document.body.removeEventListener('click', hackClick, false);
         }
