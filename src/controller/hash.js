@@ -6,7 +6,6 @@
 define(function (require) {
 
     var URL = require('../URL');
-    var params = [];
     var applyHandler;
     var curLocation;
 
@@ -17,11 +16,11 @@ define(function (require) {
      * @param {URL} url
      * @param {Object} options
      */
-    function callHandler(url) {
-        if (url.equal(curLocation) && !options.force) {
+    function callHandler(url, options) {
+        if (curLocation && url.equal(curLocation) && !options.force) {
             return;
         }
-        applyHandler(url, params.unshift() || {});
+        applyHandler(url, options);
         curLocation = url;
     }
 
@@ -45,11 +44,10 @@ define(function (require) {
      * 路由监控
      *
      * @inner
-     * @param {Object}
      */
     function monitor() {
         var url = createURL();
-        callHandler(url);
+        callHandler(url, {});
     }
 
     var exports = {};
@@ -80,18 +78,16 @@ define(function (require) {
         options = options || {};
         url = createURL(url, query);
 
-        params.push(options);
-        if (options.silent) {
-            callHandler(url);
-        }
-        else {
+        callHandler(url, options);
+        // 会浪费一次没有必要的hashchange...
+        if (!options.silent) {
             location.hash = '#' + url.toString();
         }
     };
 
     /**
      * 重置当前的URL
-     * 
+     *
      * @public
      * @param {string} url
      * @param {Object=} query
@@ -121,7 +117,7 @@ define(function (require) {
         window.removeEventListener('hashchange', monitor, false);
     };
 
-    require('../processor').plugin(exports);
+    require('../controller').plugin(exports);
 
     return exports;
 

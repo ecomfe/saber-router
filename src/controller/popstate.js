@@ -17,7 +17,7 @@ define(function (require) {
      * @param {Object} options
      */
     function callHandler(url, options) {
-        if (url.equal(curLocation) && !options.force) {
+        if (curLocation && url.equal(curLocation) && !options.force) {
             return;
         }
         applyHandler(url, options);
@@ -34,7 +34,10 @@ define(function (require) {
      */
     function createURL(url, query) {
         if (!url) {
-            url = location.hash.substring(1);
+            url = location.pathname;
+            if (location.search.length > 1) {
+                url += location.search;
+            }
         }
         return new URL(url, query, {base: curLocation});
     }
@@ -43,9 +46,10 @@ define(function (require) {
      * 路由监控
      *
      * @inner
-     * @param {Object} e
+     * @param {Object=} e
      */
     function monitor(e) {
+        e = e || {};
         var url = createURL();
         callHandler(url, e.state || {});
     }
@@ -112,7 +116,7 @@ define(function (require) {
      */
     exports.init = function (apply) {
         window.addEventListener('popstate', monitor, false);
-        window.addEventListener('click', hackClick, false);
+        document.body.addEventListener('click', hackClick, false);
         applyHandler = apply;
         monitor();
     };
@@ -131,17 +135,15 @@ define(function (require) {
         options = options || {};
         url = createURL(url, query);
 
-        if (options.silent) {
-            callHandler(url, options);
-        }
-        else {
+        callHandler(url, options);
+        if (!options.silent) {
             history.pushState(options, options.title, url.toString());
         }
     };
 
     /**
      * 重置当前的URL
-     * 
+     *
      * @public
      * @param {string} url
      * @param {Object=} query
@@ -168,8 +170,10 @@ define(function (require) {
      */
     exports.dispose = function () {
         window.removeEventListener('hashchange', monitor, false);
-        window.removeEventListener('click', hackClick, false);
+        document.body.removeEventListener('click', hackClick, false);
     };
+
+    require('../controller').plugin(exports);
 
     return exports;
 

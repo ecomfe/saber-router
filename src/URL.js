@@ -39,8 +39,8 @@ define(function (require) {
      */
     function URL(str, options) {
         options = options || {};
-        var base = options.base || {};
-        str = str.trim();
+
+        str = str.trim() || '/'
 
         var token = this.token = options.token || DEFAULT_TOKEN;
 
@@ -48,6 +48,7 @@ define(function (require) {
         this.fragment = new Fragment(str[1]);
 
         str = str[0].split(token);
+        var base = options.base || {};
         this.path = new Path(str[0], base.path);
         this.query = new Query(str[1]);
 
