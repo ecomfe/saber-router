@@ -10,6 +10,8 @@ define(function (require) {
     var Fragment = require('saber-uri/component/Fragment');
     var config = require('./config');
 
+    var DEFAULT_TOKEN = '?';
+
     /**
      * normal path
      * 如果路径指向文件夹（以`/`结尾）
@@ -38,13 +40,17 @@ define(function (require) {
     function URL(str, options) {
         options = options || {};
         var base = options.base || {};
-
         str = str.trim();
+
+        var token = this.token = options.token || DEFAULT_TOKEN;
+
         str = str.split('#');
         this.fragment = new Fragment(str[1]);
-        str = str[0].split('?');
+
+        str = str[0].split(token);
         this.path = new Path(str[0], base.path);
         this.query = new Query(str[1]);
+
         if (options.query) {
             this.query.add(options.query);
         }
@@ -58,7 +64,7 @@ define(function (require) {
      */
     URL.prototype.toString = function () {
         return this.path.toString()
-            + this.query.toString()
+            + this.query.toString(this.token)
             + this.fragment.toString();
     };
 

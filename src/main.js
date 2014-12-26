@@ -6,15 +6,8 @@
 define(function (require) {
 
     var extend = require('saber-lang/extend');
-    var URL = require('./URL');
     var globalConfig = require('./config');
-
-    /**
-     * 当前路径
-     *
-     * @type {URL}
-     */
-    var curLocation = {};
+    var controller = require('./controller');
 
     /**
      * 路由规则
@@ -64,33 +57,15 @@ define(function (require) {
     }
 
     /**
-     * 创建URL对象
-     *
-     * @inner
-     * @param {string} url
-     * @param {Object} query
-     * @param {URL} base
-     * @return {URL}
-     */
-    function createURL(url, query, base) {
-        return new URL(url, {query: query, base: base});
-    }
-
-    /**
-     * URL跳转
+     * 根据URL调用处理器
      *
      * @inner
      * @param {URL} url
-     * @param {Object} options
-     * @param {boolean=} options.force
+     * @param {Object=} options
      * @param {string=} options.title
      */
-    function redirect(url, options) {
+    function apply(url, options) {
         options = options || {};
-
-        if (url.equal(curLocation) && !options.force) {
-            return;
-        }
 
         var handler;
         var defHandler;
@@ -126,7 +101,6 @@ define(function (require) {
         if (options.title) {
             document.title = options.title;
         }
-        curLocation = url;
     }
 
     /**
@@ -171,87 +145,6 @@ define(function (require) {
         rules.push(rule);
     }
 
-    /**
-     * 获取当前页面的URL
-     *
-     * @return {string}
-     */
-    function getURL() {
-        var res = location.pathname;
-        if (location.search.length > 1) {
-            res += location.search;
-        }
-        if (location.hash.length > 1) {
-            res += location.hash;
-        }
-        return res;
-    }
-
-    /**
-     * hashchange监听
-     *
-     * @inner
-     */
-    function monitor(e) {
-        var url = createURL(getURL(), null, curLocation);
-        redirect(url, e.state);
-    }
-
-    /**
-     * 获取本页内的跳转URL
-     * 如果没有获取就返回undefined
-     *
-     * @inner
-     * @param {HTMLElement} ele
-     * @return {string=}
-     */
-    function getLinkInUrl(ele) {
-        var target = ele.getAttribute('target');
-        var href = ele.getAttribute('href');
-        var res;
-
-        if (!href || (target && target !== '_self')) {
-            return res;
-        }
-
-        res = href.charAt(0) !== '#' && href.indexOf(':') < 0 && href;
-        return res;
-    }
-
-    /**
-     * 劫持click
-     * 取消默认行为改为调用redirect
-     *
-     * @inner
-     * @param {Event} e
-     */
-    function hackClick(e) {
-        var target = e.target;
-        if (e.path) {
-            for (var i = 0, item; item = e.path[i]; i++) {
-                if (item.tagName === 'A') {
-                    target = item;
-                    break;
-                }
-            }
-        }
-        else {
-            while (target && target.tagName !== 'A') {
-                target = target.parentNode;
-            }
-        }
-
-        if (!target) {
-            return;
-        }
-
-        var href = getLinkInUrl(target);
-        if (href) {
-            exports.redirect(href);
-            e.preventDefault();
-        }
-    }
-
     var exports = {};
 
     /**
@@ -264,20 +157,7 @@ define(function (require) {
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {
-        if (globalConfig.disabled) {
-            return exports.redirect(url, query);
-        }
-
-        options = options || {};
-        url = createURL(url, query, curLocation);
-        if (options.silent) {
-            curLocation = url;
-        }
-        else {
-            redirect(url, options);
-        }
-        options.url = url;
-        history.replaceState(options, options.title, url.toString());
+        controller.reset(url, query, options);
     };
 
     /**
@@ -290,7 +170,6 @@ define(function (require) {
      */
     exports.config = function (options) {
         options = options || {};
-
         extend(globalConfig, options);
     };
 
@@ -306,7 +185,6 @@ define(function (require) {
         if (indexOfHandler(path) >= 0) {
             throw new Error('path has been existed');
         }
-
         addRule(path, fn, thisArg);
     };
 
@@ -330,7 +208,6 @@ define(function (require) {
      */
     exports.clear = function () {
         rules = [];
-        curLocation = {};
     };
 
     /**
@@ -345,32 +222,7 @@ define(function (require) {
      * @param {boolean=} options.silent 是否静默跳转（不改变URL）
      */
     exports.redirect = function (url, query, options) {
-        options = options || {};
-        // API向前兼容
-        // 支持 redirect(url, force) 与 redirect(url, query, force)
-        var args = Array.prototype.slice.call(arguments);
-        if ('[object Boolean]' === Object.prototype.toString.call(args[args.length - 1])) {
-            options = {force: args.pop()};
-            query = args[1];
-        }
-
-        url = createURL(url, query, curLocation);
-
-        if (globalConfig.disabled && options.silent) {
-            redirect(url, options);
-            return;
-        }
-        else if (globalConfig.disabled) {
-            location.href = url.toString();
-            return;
-        }
-
-        var changed = !url.equalWithFragment(curLocation);
-        redirect(url, options);
-
-        if (!options.silent && changed) {
-            history.pushState({title: options.title}, options.title, url.toString());
-        }
+        controller.redirect(url, query, options);
     };
 
     /**
@@ -381,13 +233,7 @@ define(function (require) {
      */
     exports.start = function (options) {
         exports.config(options);
-        if (!globalConfig.disabled) {
-            window.addEventListener('popstate', monitor, false);
-            document.body.addEventListener('click', hackClick, false);
-        }
-
-        var url = createURL(getURL());
-        redirect(url);
+        controller.init(apply);
     };
 
     /**
@@ -396,10 +242,7 @@ define(function (require) {
      * @public
      */
     exports.stop = function () {
-        if (!globalConfig.disabled) {
-            window.removeEventListener('popstate', monitor, false);
-            document.body.removeEventListener('click', hackClick, false);
-        }
+        controller.dispose();
     };
 
     return exports;
