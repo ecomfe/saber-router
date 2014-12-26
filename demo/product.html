@@ -29,12 +29,12 @@
     <div id="content"></div>
     <p><a id="btn">返回</a></p>
     <ul>
+        <li><a href="/demo/index.html">index</a></li>
         <li><a href="/demo/list.html">list</a></li>
-        <li><a href="/demo/product.html?id=100">product 100</a></li>
     </ul>
     <script>
         require(['saber-router', 'app'], function (router, app) {
-            router.add('/demo/index.html', app.index);
+            router.add('/demo/product.html', app.product);
             router.start();
         });
     </script>
