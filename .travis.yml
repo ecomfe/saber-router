@@ -3,7 +3,4 @@ node_js:
   - 0.10
 before_install:
   - npm install phantomjs --save-dev
-  - git clone https://github.com/ecomfe/saber-lang.git test/dep/saber-lang/1.0.0
-  - git clone https://github.com/ecomfe/saber-env.git test/dep/saber-env/1.0.0
-  - git clone --branch=develop https://github.com/ecomfe/saber-uri.git test/dep/saber-uri/1.0.0
 install: true
