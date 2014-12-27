@@ -48,6 +48,8 @@ define(function (require) {
     function monitor() {
         var url = createURL();
         callHandler(url, {});
+        // TODO
+        // 相对路径的处理
     }
 
     var exports = {};
@@ -80,6 +82,7 @@ define(function (require) {
 
         callHandler(url, options);
         // 会浪费一次没有必要的hashchange...
+        // 但不这样搞的话 options参数不好传递
         if (!options.silent) {
             location.hash = '#' + url.toString();
         }

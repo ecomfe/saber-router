@@ -57,6 +57,124 @@ define(function (require) {
 
         });
 
+        describe('redirect', function () {
+
+            var handler = jasmine.createSpy('handler');
+
+            beforeEach(function () {
+                hashController.init(handler);
+                handler.calls.reset();
+            });
+
+            afterEach(function () {
+                hashController.dispose();
+                location.hash = '';
+            });
+
+            it('should call the handler and change the hash', function (done) {
+                var path = '/abc';
+                hashController.redirect(path);
+                setTimeout(function () {
+                    expect(handler.calls.count()).toBe(1);
+                    expect(location.hash).toEqual('#' + path);
+                    done();
+                }, INTERVAL_TIME);
+            });
+
+            it('with query should call the handler and change the hash', function (done) {
+                var path = '/abc';
+                hashController.redirect(path, {name: 'treelite'});
+                setTimeout(function () {
+                    expect(handler.calls.count()).toBe(1);
+                    expect(location.hash).toEqual('#' + path + '~name=treelite');
+                    done();
+                }, INTERVAL_TIME);
+            });
+
+            it('to the same path do not fire the handler repeatedly', function (done) {
+                var path = '/abc';
+                hashController.redirect(path);
+                setTimeout(function () {
+                    hashController.redirect(path);
+                    setTimeout(function () {
+                        expect(handler.calls.count()).toBe(1);
+                        done();
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+            it('to the same path with different query should fire the handler repeatedly', function (done) {
+                var path = '/abc';
+                hashController.redirect(path);
+                setTimeout(function () {
+                    hashController.redirect(path, {name: 'treelite'});
+                    setTimeout(function () {
+                        hashController.redirect(path + '~name=saber');
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(3);
+                            done();
+                        }, INTERVAL_TIME);
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+            it('to the same path width `force` params should fire the handler repeatedly', function (done) {
+                var path = '/abc';
+                hashController.redirect(path);
+                setTimeout(function () {
+                    hashController.redirect(path, null, {force: true});
+                    setTimeout(function () {
+                        expect(handler.calls.count()).toBe(2);
+                        done();
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+
+            });
+
+            it('do not change the hash while call it with `silent` param', function (done) {
+                hashController.redirect('/abc', null, {silent: true});
+                setTimeout(function () {
+                    expect(location.hash).toEqual('');
+                    done();
+                }, INTERVAL_TIME);
+            });
+
+            it('fire the handler with URL param', function (done) {
+                hashController.redirect('/abc~name=treelite');
+                setTimeout(function () {
+                    var url = handler.calls.argsFor(0)[0];
+                    expect(url.getPath()).toEqual('/abc');
+                    expect(url.getQuery()).toEqual({name: 'treelite'});
+
+                    hashController.redirect('/bbb', {query: 'abc'});
+                    setTimeout(function () {
+                        var url = handler.calls.argsFor(1)[0];
+                        expect(url.getPath()).toEqual('/bbb');
+                        expect(url.getQuery()).toEqual({query: 'abc'});
+                        done();
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+            it('support relative path', function (done) {
+                hashController.redirect('/a/b/c');
+                setTimeout(function () {
+                    hashController.redirect('d');
+                    expect(handler.calls.count()).toBe(2);
+                    var url = handler.calls.argsFor(1)[0];
+                    expect(url.toString()).toEqual('/a/b/d');
+                    setTimeout(function () {
+                        hashController.redirect('../b/d');
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(2);
+                            done();
+                        }, INTERVAL_TIME);
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+        });
+
     });
 
 });
