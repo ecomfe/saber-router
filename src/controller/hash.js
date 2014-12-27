@@ -37,7 +37,7 @@ define(function (require) {
         if (!url) {
             url = location.hash.substring(1);
         }
-        return new URL(url, query, {base: curLocation, token: '~'});
+        return new URL(url, {query: query, base: curLocation, token: '~'});
     }
 
     /**
@@ -116,8 +116,6 @@ define(function (require) {
     exports.dispose = function () {
         window.removeEventListener('hashchange', monitor, false);
     };
-
-    require('../controller').plugin(exports);
 
     return exports;
 

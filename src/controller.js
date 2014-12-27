@@ -7,18 +7,25 @@ define(function (require) {
 
     var methods = ['redirect', 'init', 'dispose', 'reset'];
 
-    var controller = require('./controller/default');
+    var core = require('./controller/default');
 
     var exports = {};
 
-    exports.plugin = function (core) {
-        controller = core;
+    /**
+     * 动态更换内部实现
+     *
+     * @public
+     * @param {Object} controller
+     */
+    exports.plugin = function (controller) {
+        core = controller;
     };
 
+    // 导出公共方法
     methods.forEach(function (name) {
         exports[name] = function () {
             var args = Array.prototype.slice.call(arguments);
-            return controller[name].apply(controller, args);
+            return core[name].apply(core, args);
         };
     });
 

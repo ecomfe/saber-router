@@ -245,5 +245,15 @@ define(function (require) {
         controller.dispose();
     };
 
+    /**
+     * 更换控制器
+     *
+     * @public
+     * @param {Object} implement
+     */
+    exports.controller = function (implement) {
+        controller.plugin(implement);
+    };
+
     return exports;
 });

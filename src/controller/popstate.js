@@ -39,7 +39,7 @@ define(function (require) {
                 url += location.search;
             }
         }
-        return new URL(url, query, {base: curLocation});
+        return new URL(url, {query: query, base: curLocation});
     }
 
     /**
@@ -135,10 +135,11 @@ define(function (require) {
         options = options || {};
         url = createURL(url, query);
 
-        callHandler(url, options);
-        if (!options.silent) {
+        if (!curLocation.equalWithFragment(url) && !options.silent) {
             history.pushState(options, options.title, url.toString());
         }
+
+        callHandler(url, options);
     };
 
     /**
@@ -172,8 +173,6 @@ define(function (require) {
         window.removeEventListener('hashchange', monitor, false);
         document.body.removeEventListener('click', hackClick, false);
     };
-
-    require('../controller').plugin(exports);
 
     return exports;
 
