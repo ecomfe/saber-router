@@ -34,7 +34,8 @@
         <li><a href="/demo/popstate/product/100">product 100</a></li>
     </ul>
     <script>
-        require(['saber-router', 'app', 'saber-router/controller/popstate'], function (router, app) {
+        require(['saber-router', 'app', 'saber-router/controller/popstate'], function (router, app, popstate) {
+            router.controller(popstate);
             router.add('/demo/popstate.html', app.index);
             router.add('/demo/popstate/list', app.list);
             router.add('/demo/popstate/product/:id', app.product);

@@ -34,7 +34,8 @@
         <li><a href="#/product/100">product 100</a></li>
     </ul>
     <script>
-        require(['saber-router', 'app', 'saber-router/controller/hash'], function (router, app) {
+        require(['saber-router', 'app', 'saber-router/controller/hash'], function (router, app, hash) {
+            router.controller(hash);
             router.add('/', app.index);
             router.add('/list', app.list);
             router.add('/product/:id', app.product);
