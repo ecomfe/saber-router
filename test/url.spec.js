@@ -34,6 +34,22 @@ define(function (require) {
                 expect(url.query.equal('kw=www&t=10&t=20')).toBeTruthy();
             });
 
+            it('should pass width token', function () {
+                var url = new URL('/index~kw=ww&t=10', {token: '~'});
+
+                expect(url.path.get()).toEqual('/index');
+                expect(url.query.equal('kw=ww&t=10')).toBeTruthy();
+                expect(url.fragment.get()).toEqual('');
+            });
+
+            it('path should be "/" with empty param', function () {
+                var url = new URL();
+                expect(url.path.get()).toEqual('/');
+
+                url = new URL('', {token: '~'});
+                expect(url.path.get()).toEqual('/');
+            });
+
         });
 
         describe('.toString()', function () {
@@ -54,6 +70,16 @@ define(function (require) {
                 str = 'work/search?www#111';
                 url = new URL(str);
                 expect(url.toString()).toEqual(str);
+            });
+
+            it('should return the right string with special token', function () {
+                var str = '../work/search~kw=xxx'
+                var url = new URL(str, {token: '~'});
+                expect(url.toString()).toEqual(str);
+
+                str = 'work/search~';
+                url = new URL(str, {token: '~'});
+                expect(url.toString()).toEqual('work/search');
             });
 
         });

@@ -40,7 +40,7 @@ define(function (require) {
     function URL(str, options) {
         options = options || {};
 
-        str = str.trim() || '/'
+        str = (str || '').trim() || '/';
 
         var token = this.token = options.token || DEFAULT_TOKEN;
 
@@ -83,17 +83,24 @@ define(function (require) {
     };
 
     /**
-     * 比较
+     * 比较Path与Query是否相等
      *
      * @public
      * @param {URL} url
-     * @return {Boolean}
+     * @return {boolean}
      */
     URL.prototype.equal = function (url) {
         return this.query.equal(url.query)
             && this.equalPath(url.path.get());
     };
 
+    /**
+     * 比较Path, Query及Fragment是否相等
+     *
+     * @public
+     * @param {URL} url
+     * @return {boolean}
+     */
     URL.prototype.equalWithFragment = function (url) {
         return this.equal(url)
             && this.fragment.equal(url.fragment);
