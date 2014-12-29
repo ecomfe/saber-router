@@ -20,15 +20,16 @@ define(function (require) {
      * 判断是否已存在路由处理器
      *
      * @inner
-     * @param {string} path
-     * @return {boolean}
+     * @param {string|RegExp} path
+     * @return {number}
      */
     function indexOfHandler(path) {
         var index = -1;
 
+        path = path.toString();
         rules.some(function (item, i) {
             // toString是为了判断正则是否相等
-            if (item.path.toString() === path.toString()) {
+            if (item.raw.toString() === path) {
                 index = i;
             }
             return index !== -1;
@@ -131,6 +132,7 @@ define(function (require) {
      */
     function addRule(path, fn, thisArg) {
         var rule = {
+                raw: path,
                 path: path,
                 fn: fn,
                 thisArg: thisArg

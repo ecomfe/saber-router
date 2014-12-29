@@ -5,590 +5,245 @@
 
 define(function (require) {
     var router = require('saber-router');
+    var URL = require('saber-router/URL');
 
-    var KEY_DECODE = '中文';
-    var KEY_ENCODE = encodeURIComponent(KEY_DECODE);
-
-    beforeEach(function () {
-        history.replaceState({}, '', '/');
-    });
-
-    afterEach(function () {
-        router.clear();
-        history.replaceState({}, '', '/test/runner.html');
-    });
-
-    describe('router.redirect', function () {
-
-        it('no handler, throw exception', function () {
-            var hadThrowed;
-            try {
-                router.redirect('/');
+    // mock controller
+    var controller = {
+        init: function (applyHander) {
+            this.applyHander = applyHander;
+        },
+        redirect: function (url, query, options) {
+            var url = new URL(url, {query: query});
+            if (!this.url || !this.url.equal(url)) {
+                this.applyHander(url, options);
+                this.url = url;
             }
-            catch (e) {
-                if (e.message.indexOf('route') >= 0) {
-                    hadThrowed = true;
+        },
+        dispose: function () {
+            this.applyHander = null;
+        },
+        reset: function () {}
+    };
+
+    router.controller(controller);
+
+    describe('main', function () {
+
+        describe('start/stop', function () {
+
+            it('should init controller and dipose controller', function () {
+                spyOn(controller, 'init');
+                spyOn(controller, 'dispose');
+
+                router.start();
+                router.stop();
+
+                expect(controller.init.calls.count()).toBe(1);
+                expect(controller.dispose.calls.count()).toBe(1);
+            });
+
+        });
+
+        describe('add/remove', function () {
+
+            beforeEach(function () {
+                router.start();
+            });
+
+            afterEach(function () {
+                router.stop();
+                router.clear();
+            });
+
+            it('no handler, throw exception', function () {
+                var error;
+                try {
+                    router.redirect('/');
                 }
-                else {
-                    throw e;
+                catch (e) {
+                    error = e;
                 }
-            }
+                expect(error).not.toBeUndefined();
+                expect(error.message.indexOf('route') >= 0).toBeTruthy();
+            });
 
-            expect(hadThrowed).toBeTruthy();
-        });
-
-        it('default handler', function () {
-            var fn = jasmine.createSpy('fn');
-            var handler = jasmine.createSpy('handler');
-            var error;
-
-            router.add('/test', handler);
-            router.add('', fn);
-
-            try {
-                router.redirect('/test');
-                router.redirect('/');
-            }
-            catch (e) {
-                error = true;
-            }
-
-            expect(fn).toHaveBeenCalled();
-            expect(handler).toHaveBeenCalled();
-            expect(error).toBeFalsy();
-        });
-
-        it('default index is empty', function () {
-            var fn = jasmine.createSpy('fn');
-
-            router.add('/index', fn);
-
-            try {
-                router.redirect('/');
-            }
-            catch (e) {}
-
-            expect(fn).not.toHaveBeenCalled();
-        });
-
-        it('support silent redirect', function () {
-            var fn1 = jasmine.createSpy('fn1');
-            var fn2 = jasmine.createSpy('fn2');
-
-            router.add('/', fn1);
-            router.add('/test', fn2);
-
-            router.redirect('/test');
-            expect(fn2).toHaveBeenCalled();
-            expect(location.pathname).toEqual('/test');
-
-            router.redirect('/', null, { silent: true });
-            expect(fn1).toHaveBeenCalled()
-            expect(location.pathname).toEqual('/test');
-        });
-
-        it('can transfer path, query, url and options', function () {
-            var fn = jasmine.createSpy('fn');
-            var query = {name: 'treelite'};
-            var options = {more: 'str'};
-
-            router.add('/', fn);
-
-            router.redirect('/', null, options);
-
-            expect(fn).toHaveBeenCalled();
-            expect(fn.calls.argsFor(0)).toEqual(['/', {}, '/', options]);
-
-            router.redirect('/', query, options);
-            expect(fn.calls.argsFor(1)).toEqual(['/', query, '/?name=treelite', options]);
-
-        });
-
-        describe('has', function () {
-            it('one handler but not found route, throw exception', function () {
+            it('default handler', function () {
+                var error;
                 var fn = jasmine.createSpy('fn');
-                var exception;
+
+                router.add('', fn);
+                try {
+                    router.redirect('/');
+                }
+                catch (e) {
+                    error = e;
+                }
+
+                expect(error).toBeUndefined();
+                expect(fn).toHaveBeenCalled();
+            });
+
+            it('call handler with params', function () {
+                var fn = jasmine.createSpy('fn');
+                var options = {foo: 'bar'};
+
+                router.add('/home/work', fn);
+
+                router.redirect('/home/work?name=treelite', {name: 'saber'}, options);
+
+                expect(fn).toHaveBeenCalled();
+                var params = fn.calls.argsFor(0);
+                expect(params[0]).toEqual('/home/work');
+                expect(params[1]).toEqual({name: ['treelite', 'saber']});
+                expect(params[2]).toEqual('/home/work?name=treelite&name=saber');
+                expect(params[3]).toEqual(options);
+            });
+
+            it('RESTful handler', function () {
+                var fn = jasmine.createSpy('fn');
+
+                router.add('/product/:id', fn);
+                router.redirect('/product/100?type=n');
+
+                expect(fn).toHaveBeenCalled();
+                var params = fn.calls.argsFor(0);
+                expect(params[1]).toEqual({id: '100', type: 'n'});
+            });
+
+            it('RegExp handler', function () {
+                var fn = jasmine.createSpy('fn');
+
+                router.add(/\/\d{1,2}$/, fn);
+
+                try {
+                    router.redirect('/10');
+                    // should error
+                    router.redirect('/100');
+                }
+                catch (e) {}
+                expect(fn.calls.count()).toBe(1);
+            });
+
+            it('add the same handler repeatedly should throw error', function () {
+                var error;
+                var fn = jasmine.createSpy('fn');
+
                 router.add('/', fn);
-
                 try {
-                    router.redirect('/index');
+                    router.add('/', fn);
                 }
                 catch (e) {
-                    if (e.message.indexOf('route') >= 0) {
-                        exception = true;
-                    }
-                    else {
-                        throw e;
-                    }
+                    error = true;
                 }
+                expect(error).toBeTruthy();
 
-                expect(exception).toBeTruthy();
-                expect(fn).not.toHaveBeenCalled();
-            });
-
-            it('one handler, with `thisArg`', function () {
-                var res;
-                var obj = {name: 'saber'};
-
-                router.add(
-                    '/', 
-                    function () {
-                        res = this.name;
-                    },
-                    obj
-                );
-
-                router.redirect('/');
-
-                expect(res).toBe(obj.name);
-            });
-
-            it('one handler, without querystring', function () {
-                var called;
-                router.add('/', function (url, query) {
-                    expect(url).toBe('/');
-                    expect(query).toEqual({});
-                    called = true;
-                });
-
-                router.redirect('/');
-
-                expect(called).toBeTruthy();
-            });
-
-            it('one handler, with querystring', function () {
-                var called;
-                router.add('/', function (url, query) {
-                    expect(url).toBe('/');
-                    expect(query).toEqual({uid: '100'});
-                    called = true;
-                });
-
-                router.redirect('/?uid=100');
-
-                expect(called).toBeTruthy();
-            });
-
-            it('one handler with querystring should decode', function () {
-                var called;
-                router.add('/', function (url, query) {
-                    expect(query.name).toEqual(KEY_DECODE);
-                });
-
-                router.redirect('/?name=' + KEY_ENCODE);
-                router.redirect('/', {name: KEY_ENCODE});
-            });
-
-            it('one handler, multi call with the same path', function () {
-                var called = 0;
-                router.add('/', function () {
-                    called++;
-                });
-
-                router.redirect('/');
-                router.redirect('/');
-                router.redirect('/');
-
-                expect(called).toBe(1);
-            });
-
-            it('one handler, multi call with the same querystring', function () {
-                var called = 0;
-                router.add('/', function () {
-                    called++;
-                });
-
-                router.redirect('/?kw=w&t=10');
-                router.redirect('/?t=10&kw=w');
-                router.redirect('/?kw=w&t=10');
-
-                expect(called).toBe(1);
-            });
-
-            it('one handler, multi call with different querystring', function () {
-                var called = 0;
-                router.add('/', function () {
-                    called++;
-                });
-
-                router.redirect('/?uid=100');
-                router.redirect('/');
-                router.redirect('/?uid=200');
-                router.redirect('/?name=treelite');
-
-                expect(called).toBe(4);
-            });
-
-            it('one handler, force call with the same path', function () {
-                var called = 0;
-
-                router.add('/', function () {
-                    called++;
-                });
-
-                router.redirect('/');
-                router.redirect('/');
-                router.redirect('/', true);
-
-                expect(called).toBe(2);
-            });
-
-            it('one handler with query object', function () {
-                router.add('/', function (url, query) {
-                    expect(Object.keys(query).length).toBe(2);
-                    expect(query.name).toEqual('treelite');
-                    expect(query.ke).toEqual('ww');
-                });
-
-                router.redirect('/?ke=ww', {name: 'treelite'});
-            });
-
-            it('one handler, with query object and fore', function () {
-                var called = 0;
-
-                router.add('/', function (url, query) {
-                    called++;
-                    expect(Object.keys(query).length).toBe(1);
-                    expect(query.kw).toEqual('ww');
-                });
-
-                router.redirect('/?kw=ww');
-                router.redirect('/?kw=ww');
-                router.redirect('/', {kw: 'ww'}, true);
-
-                expect(called).toBe(2);
-            });
-
-            it('one handler, add the same handler will throw exception', function () {
-                var hadThrowed;
-
-                router.add('/', function () {});
+                error = false;
+                router.add('/list/:id', fn);
                 try {
-                    router.add('/', function () {});
+                    router.add('/list/:id', fn);
                 }
                 catch (e) {
-                    hadThrowed = true;
+                    error = true;
                 }
+                expect(error).toBeTruthy();
 
-                expect(hadThrowed).toBeTruthy();
-            });
-
-            it('one handler with RegExp', function () {
-                var called = 0;
-
-                router.add(/^.*\.action$/, function () {
-                    called++;
-                });
-
-                router.redirect('/add.action');
-                router.redirect('/work/list.action');
-
-                expect(called).toBe(2);
-            });
-
-            it('one handler with RegExp but not found route, throw exception', function () {
-                var fn = jasmine.createSpy('fn');
-                var exception;
-                router.add(/^.*\.action$/, fn);
-
+                error = false;
+                router.add(/\/abc$/, fn);
                 try {
-                    router.redirect('/index');
+                    router.add(/\/abc$/, fn);
                 }
                 catch (e) {
-                    if (e.message.indexOf('route') >= 0) {
-                        exception = true;
-                    }
-                    else {
-                        throw e;
-                    }
+                    error = true;
                 }
-
-                expect(exception).toBeTruthy();
-                expect(fn).not.toHaveBeenCalled();
+                expect(error).toBeTruthy();
             });
 
-            it('one handler with RegExp and capturing group', function () {
-                var handler = jasmine.createSpy('hander');
-
-                router.add(new RegExp('item/([^?/]+)/comments'), handler);
-
-                router.redirect('/item/100/comments');
-
-                expect(handler).toHaveBeenCalled();
-
-                var query = handler.calls.mostRecent().args[1];
-                expect(query).toEqual({'$1': '100'});
-            });
-
-            it('one RESTful handler', function () {
-                var handler = jasmine.createSpy('handler');
-
-                router.add('/item/:id/comments/:page/re', handler);
-
-                var path = '/item/100/comments/2/re';
-                router.redirect(path + '?name=saber');
-
-                expect(handler).toHaveBeenCalled();
-
-                var url = handler.calls.mostRecent().args[0];
-                var query = handler.calls.mostRecent().args[1];
-                expect(url).toBe(path);
-                expect(query).toEqual({id: '100', page: '2', name: 'saber'});
-            });
-            
-            it('RESTful with query', function () {
-                var handler = jasmine.createSpy('handler');
-                router.add('/item/:id', handler);
-
-                router.redirect('/item/100?k=n');
-                var query = handler.calls.mostRecent().args[1];
-                expect(handler).toHaveBeenCalled();
-                expect(query).toEqual({id: '100', k: 'n'});
-            });
-
-            it('one RESTful handler, query param should decode', function () {
-                router.add('/item/:name', function (url, query) {
-                    expect(query.name).toEqual(KEY_DECODE);
-                });
-
-                router.redirect('/item/' + KEY_DECODE);
-                router.redirect('/item/' + KEY_ENCODE);
-            });
-
-            it('two RESTful handlers', function () {
+            it('remove rule', function () {
                 var fn1 = jasmine.createSpy('fn1');
                 var fn2 = jasmine.createSpy('fn2');
-
-                router.add('/item/:id', fn1);
-                router.add('/item/:id/detail', fn2);
-
-                router.redirect('/item/100');
-                expect(fn1).toHaveBeenCalled();
-                expect(fn2).not.toHaveBeenCalled();
-
-                router.redirect('/item/100?name=w');
-                expect(fn1.calls.count()).toBe(2);
-                expect(fn2).not.toHaveBeenCalled();
-
-                router.redirect('/item/100/detail');
-                expect(fn1.calls.count()).toBe(2);
-                expect(fn2).toHaveBeenCalled();
-
-                router.redirect('/item/100/detail?name=w');
-                expect(fn1.calls.count()).toBe(2);
-                expect(fn2.calls.count()).toBe(2);
-            });
-
-            it('two handlers, called correctly', function () {
-                var first;
-                var second;
-
-                router.add('/', function () {
-                    first = true;
-                });
-
-                router.add('/home', function () {
-                    second = true;
-                });
-
-                router.redirect('/');
-
-                expect(first).toBeTruthy();
-                expect(second).toBeFalsy();
-            });
-            
-            it('two RegExp handlers match the same path, only call the first handler', function () {
-                var first;
-                var second;
-
-                router.add(/^.*\.action$/, function () {
-                    first = true;
-                });
-
-                router.add(/^\/home\/.*\.action$/, function () {
-                    second = true;
-                });
-
-                router.redirect('/home/welcome.action');
-
-                expect(first).toBeTruthy();
-                expect(second).toBeFalsy();
-            });
-
-            it('relative path', function () {
-                var fn1 = jasmine.createSpy('fn1');
-                var fn2 = jasmine.createSpy('fn2');
+                var fn3 = jasmine.createSpy('fn3');
 
                 router.add('/', fn1);
                 router.add('/list/:id', fn2);
+                router.add(/\/abc$/, fn3);
 
+                router.redirect('/');
+                expect(fn1.calls.count()).toBe(1);
                 router.redirect('/list/100');
-                router.redirect('../?name=treelite');
+                expect(fn2.calls.count()).toBe(1);
+                router.redirect('/abc');
+                expect(fn3.calls.count()).toBe(1);
 
-                expect(fn1).toHaveBeenCalled();
-                expect(fn2).toHaveBeenCalled();
-                expect(fn1.calls.argsFor(0)).toEqual(['/', {name: 'treelite'}, '/?name=treelite', {}]);
+                function tryRedirect(path) {
+                    try {
+                        router.redirect('/');
+                    }
+                    catch (e) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                router.remove('/');
+                expect(tryRedirect('/')).toBeFalsy();
+                expect(fn1.calls.count()).toBe(1);
+
+                router.remove('/list/:id');
+                expect(tryRedirect('/list/100')).toBeFalsy();
+                expect(fn2.calls.count()).toBe(1);
+
+                router.remove(/\/abc$/);
+                expect(tryRedirect('/abc')).toBeFalsy();
+                expect(fn3.calls.count()).toBe(1);
             });
 
-            it('set title', function () {
+        });
+
+        describe('config', function () {
+
+            beforeEach(function () {
+                router.start();
+            });
+
+            afterEach(function () {
+                router.stop();
+                router.clear();
+                // reset config
+                router.config({
+                    index: ''
+                });
+            });
+
+            it('default index name is empty', function () {
+                var fn = jasmine.createSpy('fn');
+                router.add('/index', fn);
+
+                try {
+                    router.redirect('/');
+                }
+                catch (e) {}
+
+                expect(fn).not.toHaveBeenCalled();
+            });
+
+            it('set index name', function () {
                 var fn = jasmine.createSpy('fn');
 
-                router.add('/list', fn);
+                router.config({
+                    index: 'index'
+                });
 
-                var oldTitle = document.title;
-                router.redirect('/list', null, {title: 'hello'});
-                expect(document.title).toEqual('hello');
-                document.title = oldTitle;
-            });
-        });
-    });
+                router.add('/index', fn);
 
-    describe('router.remove', function () {
-
-        it('it can work', function () {
-            var rootCalled;
-            var homeCalled;
-
-            router.add('/', function () {
-                rootCalled = true;
-            });
-            
-            router.add('/home', function () {
-                homeCalled = true;
-            });
-
-            router.remove('/');
-
-            var notFound;
-            try {
                 router.redirect('/');
-            }
-            catch (e) {
-                notFound = true;
-            }
+                expect(fn).toHaveBeenCalled();
 
-            expect(notFound).toBeTruthy();
-
-            router.redirect('/home');
-
-            expect(homeCalled).toBeTruthy();
-        });
-    });
-
-    describe('router.start', function () {
-
-        afterEach(function () {
-            router.stop();
-        });
-
-        it('default path is `/`', function () {
-            var fn = jasmine.createSpy('fn');
-
-            router.add('/', fn);
-            router.start();
-
-            expect(fn).toHaveBeenCalled();
-        });
-
-        it('monitor history back', function (done) {
-            var fn1 = jasmine.createSpy('fn1');
-            var fn2 = jasmine.createSpy('fn2');
-            router.add('/', fn1);
-            router.add('/detail', fn2);
-
-            router.start();
-            router.redirect('/detail');
-
-            history.back();
-            setTimeout(function () {
-                expect(fn1.calls.count()).toBe(2);
-                expect(fn2.calls.count()).toBe(1);
-                history.forward();
-                setTimeout(function () {
-                    expect(fn1.calls.count()).toBe(2);
-                    expect(fn2.calls.count()).toBe(2);
-                    done();
-                }, 100)
-            }, 100);
-        });
-    });
-
-    describe('router.config', function () {
-
-        afterEach(function () {
-            router.config({
-                index: '',
-                path: '/'
+                router.redirect('/index');
+                expect(fn.calls.count()).toBe(1);
             });
+
         });
 
-        it('use `router.config` to set index name', function () {
-            var fn = jasmine.createSpy('fn');
-
-            router.config({
-                index: 'index'
-            });
-            router.add('/index', fn);
-
-            router.redirect('/');
-            expect(fn.calls.count()).toBe(1);
-
-            router.remove('/index');
-
-            try {
-                router.redirect('/', true);
-            }
-            catch (e) {}
-            expect(fn.calls.count()).toBe(1);
-
-            router.add('/', fn);
-            router.redirect('/index', true);
-            expect(fn.calls.count()).toBe(2);
-        });
-
-    });
-
-    describe('router.reset', function () {
-
-        it('should reset the current location', function () {
-            var def = jasmine.createSpy('def');
-            var fn = jasmine.createSpy('fn');
-            var query = {name: 'treelite'};
-
-            router.add('/', def);
-            router.add('/fn', fn);
-
-            router.redirect('/', query);
-            expect(def.calls.count()).toBe(1);
-            expect(def.calls.argsFor(0)[0]).toEqual('/');
-            expect(def.calls.argsFor(0)[1]).toEqual(query);
-
-            router.reset('/fn');
-            expect(fn.calls.count()).toBe(1);
-            expect(location.pathname).toEqual('/fn');
-
-            router.redirect('/fn');
-            expect(fn.calls.count()).toBe(1);
-
-            router.redirect('/fn', query);
-            expect(fn.calls.count()).toBe(2);
-            expect(fn.calls.argsFor(1)[0]).toEqual('/fn');
-            expect(fn.calls.argsFor(1)[1]).toEqual(query);
-        });
-
-        it('support silent reset', function () {
-            var def = jasmine.createSpy('def');
-            var fn = jasmine.createSpy('fn');
-
-            router.add('/', def);
-            router.add('/fn', fn);
-
-            router.redirect('/');
-
-            router.reset('/fn', null, {silent: true});
-            expect(location.pathname).toEqual('/fn');
-            expect(fn.calls.count()).toEqual(0);
-        });
     });
 
 });
