@@ -174,6 +174,17 @@ define(function (require) {
                 }, INTERVAL_TIME);
             });
 
+            it('fire the handler with options', function (done) {
+                controller.redirect('/abc', {name: 'treelite'}, {foo: 'bar'});
+                setTimeout(function () {
+                    var url = handler.calls.argsFor(0)[0];
+                    var options = handler.calls.argsFor(0)[1];
+                    expect(url.toString()).toEqual('/abc?name=treelite');
+                    expect(options).toEqual({foo: 'bar'});
+                    finish(done);
+                }, INTERVAL_TIME);
+            });
+
             it('support relative path', function (done) {
                 controller.redirect('/a/b/c');
                 setTimeout(function () {
