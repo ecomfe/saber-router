@@ -41,11 +41,34 @@ define(function (require) {
     }
 
     /**
+     * 忽略路由监控
+     *
+     * @type {Array}
+     */
+    var ignoreMonitor = [];
+
+    /**
+     * 替换当前的hash
+     *
+     * @inner
+     * @param {string} url
+     */
+    function replaceHash(url) {
+        location.replace('#' + url);
+        // 忽略下一次的hashchange
+        ignoreMonitor.push(true);
+    }
+
+    /**
      * 路由监控
      *
      * @inner
      */
     function monitor() {
+        if (ignoreMonitor.pop()) {
+            return;
+        }
+
         var hash = location.hash.substring(1);
         var url = createURL(hash);
 
@@ -56,7 +79,7 @@ define(function (require) {
         // 遇到相对路径跳转当前页的情况就没辙了
         // 会导致有两次相同路径的历史条目...
         if (hash.charAt(0) !== '/') {
-            location.replace('#' + url.toString());
+            replaceHash(url.toString());
         }
     }
 
@@ -109,6 +132,15 @@ define(function (require) {
         options = options || {};
         url = createURL(url, query);
 
+        // 忽略重复的reset
+        // 由于location.replace仍然会触发hashchange
+        // 所以添加了ignoreMonitor的控制
+        // 因此不能重复触发相同hash的replaceHash
+        // 会导致ignoreMonitor错乱
+        if (curLocation && curLocation.equal(url)) {
+            return;
+        }
+
         if (!options.silent) {
             callHandler(url, options);
         }
@@ -116,7 +148,7 @@ define(function (require) {
             curLocation = url;
         }
 
-        location.replace('#' + url.toString());
+        replaceHash(url.toString());
     };
 
     /**

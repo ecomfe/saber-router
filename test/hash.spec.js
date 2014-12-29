@@ -6,7 +6,7 @@
 define(function (require) {
 
     var INTERVAL_TIME = 100;
-    var hashController = require('saber-router/controller/hash');
+    var controller = require('saber-router/controller/hash');
 
     describe('Hash Controller', function () {
 
@@ -21,8 +21,8 @@ define(function (require) {
                 location.hash = '#' + urlStr;
                 var fn = jasmine.createSpy('fn');
 
-                hashController.init(fn);
-                hashController.dispose();
+                controller.init(fn);
+                controller.dispose();
 
                 expect(fn).toHaveBeenCalled();
 
@@ -39,13 +39,13 @@ define(function (require) {
                 var fn = jasmine.createSpy('fn');
                 location.hash = '#/index';
 
-                hashController.init(fn);
+                controller.init(fn);
 
                 setTimeout(function () {
                     location.hash = '#/home';
                     setTimeout(function () {
                         expect(fn.calls.count()).toBe(2);
-                        hashController.dispose();
+                        controller.dispose();
                         location.hash = '#/somewhere';
                         setTimeout(function () {
                             expect(fn.calls.count()).toBe(2);
@@ -59,7 +59,7 @@ define(function (require) {
                 var fn = jasmine.createSpy('fn');
                 location.hash = '#/a/b/c';
 
-                hashController.init(fn);
+                controller.init(fn);
 
                 setTimeout(function () {
                     location.hash = '#../d';
@@ -77,118 +77,186 @@ define(function (require) {
 
             var handler = jasmine.createSpy('handler');
 
-            beforeEach(function () {
-                hashController.init(handler);
-                handler.calls.reset();
-            });
-
-            afterEach(function () {
-                hashController.dispose();
+            function finish(done) {
+                controller.dispose();
                 location.hash = '';
+                setTimeout(done, INTERVAL_TIME);
+            }
+
+            beforeEach(function () {
+                controller.init(handler);
+                handler.calls.reset();
             });
 
             it('should call the handler and change the hash', function (done) {
                 var path = '/abc';
-                hashController.redirect(path);
+                controller.redirect(path);
                 setTimeout(function () {
                     expect(handler.calls.count()).toBe(1);
                     expect(location.hash).toEqual('#' + path);
-                    done();
+                    finish(done);
                 }, INTERVAL_TIME);
             });
 
             it('with query should call the handler and change the hash', function (done) {
                 var path = '/abc';
-                hashController.redirect(path, {name: 'treelite'});
+                controller.redirect(path, {name: 'treelite'});
                 setTimeout(function () {
                     expect(handler.calls.count()).toBe(1);
                     expect(location.hash).toEqual('#' + path + '~name=treelite');
-                    done();
+                    finish(done);
                 }, INTERVAL_TIME);
             });
 
             it('to the same path do not fire the handler repeatedly', function (done) {
                 var path = '/abc';
-                hashController.redirect(path);
+                controller.redirect(path);
                 setTimeout(function () {
-                    hashController.redirect(path);
+                    controller.redirect(path);
                     setTimeout(function () {
                         expect(handler.calls.count()).toBe(1);
-                        done();
+                        finish(done);
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
             });
 
             it('to the same path with different query should fire the handler repeatedly', function (done) {
                 var path = '/abc';
-                hashController.redirect(path);
+                controller.redirect(path);
                 setTimeout(function () {
-                    hashController.redirect(path, {name: 'treelite'});
+                    controller.redirect(path, {name: 'treelite'});
                     setTimeout(function () {
-                        hashController.redirect(path + '~name=saber');
+                        controller.redirect(path + '~name=saber');
                         setTimeout(function () {
                             expect(handler.calls.count()).toBe(3);
-                            done();
+                            finish(done);
                         }, INTERVAL_TIME);
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
             });
 
             it('to the same path width `force` params should fire the handler repeatedly', function (done) {
-                var path = '/abc';
-                hashController.redirect(path);
+                var path = '/force';
+                controller.redirect(path);
                 setTimeout(function () {
-                    hashController.redirect(path, null, {force: true});
+                    controller.redirect(path, null, {force: true});
                     setTimeout(function () {
                         expect(handler.calls.count()).toBe(2);
-                        done();
+                        finish(done);
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
 
             });
 
             it('do not change the hash while call it with `silent` param', function (done) {
-                hashController.redirect('/abc', null, {silent: true});
+                controller.redirect('/silent', null, {silent: true});
                 setTimeout(function () {
+                    expect(handler.calls.count()).toBe(1);
                     expect(location.hash).toEqual('#/');
-                    done();
+                    finish(done);
                 }, INTERVAL_TIME);
             });
 
             it('fire the handler with URL param', function (done) {
-                hashController.redirect('/abc~name=treelite');
+                controller.redirect('/abc~name=treelite');
                 setTimeout(function () {
                     var url = handler.calls.argsFor(0)[0];
                     expect(url.getPath()).toEqual('/abc');
                     expect(url.getQuery()).toEqual({name: 'treelite'});
 
-                    hashController.redirect('/bbb', {query: 'abc'});
+                    controller.redirect('/bbb', {query: 'abc'});
                     setTimeout(function () {
                         var url = handler.calls.argsFor(1)[0];
                         expect(url.getPath()).toEqual('/bbb');
                         expect(url.getQuery()).toEqual({query: 'abc'});
-                        done();
+                        finish(done);
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
             });
 
             it('support relative path', function (done) {
-                hashController.redirect('/a/b/c');
+                controller.redirect('/a/b/c');
                 setTimeout(function () {
-                    hashController.redirect('d');
-                    expect(handler.calls.count()).toBe(2);
-                    var url = handler.calls.argsFor(1)[0];
-                    expect(url.toString()).toEqual('/a/b/d');
+                    controller.redirect('d');
                     setTimeout(function () {
-                        hashController.redirect('../b/d');
+                        expect(handler.calls.count()).toBe(2);
+                        expect(location.hash).toEqual('#/a/b/d');
+                        var url = handler.calls.argsFor(1)[0];
+                        expect(url.toString()).toEqual('/a/b/d');
+                        controller.redirect('../b/d');
                         setTimeout(function () {
-                            expect(handler.calls.count()).toBe(2);
-                            done();
+                            setTimeout(function () {
+                                expect(handler.calls.count()).toBe(2);
+                                expect(location.hash).toEqual('#/a/b/d');
+                                finish(done);
+                            }, INTERVAL_TIME);
                         }, INTERVAL_TIME);
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
             });
 
+        });
+
+        describe('reset', function () {
+
+            var handler = jasmine.createSpy('handler');
+
+            function finish(done) {
+                controller.dispose();
+                location.hash = '';
+                setTimeout(done, INTERVAL_TIME);
+            }
+
+            beforeEach(function () {
+                controller.init(handler);
+                handler.calls.reset();
+            });
+
+            it('should call the handler and not increase history', function (done) {
+                controller.redirect('/somewehre');
+                setTimeout(function () {
+                    controller.reset('/reset');
+                    setTimeout(function () {
+                        expect(location.hash).toEqual('#/reset');
+                        expect(handler.calls.count()).toBe(2);
+                        controller.redirect('/reset');
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(2);
+                            history.back();
+                            setTimeout(function () {
+                                expect(location.hash).toEqual('#/');
+                                expect(handler.calls.count()).toBe(3);
+                                finish(done);
+                            }, INTERVAL_TIME);
+                        });
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+            it('with silent param should not call the handler', function (done) {
+                controller.reset('/reset', null, {silent: true});
+                setTimeout(function () {
+                    expect(location.hash).toEqual('#/reset');
+                    expect(handler).not.toHaveBeenCalled();
+                    finish(done);
+                }, INTERVAL_TIME);
+            });
+
+            it('the same path do not fire handler repeatedly', function (done) {
+                controller.reset('/reset');
+                setTimeout(function () {
+                    expect(handler.calls.count()).toBe(1);
+                    controller.reset(('/reset'));
+                    setTimeout(function () {
+                        expect(handler.calls.count()).toBe(1);
+                        location.hash = '#/somewhere';
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(2);
+                            finish(done);
+                        }, INTERVAL_TIME);
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
         });
 
     });
