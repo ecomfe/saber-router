@@ -46,10 +46,18 @@ define(function (require) {
      * @inner
      */
     function monitor() {
-        var url = createURL();
+        var hash = location.hash.substring(1);
+        var url = createURL(hash);
+
         callHandler(url, {});
-        // TODO
+
         // 相对路径的处理
+        // 只能替换当次的历史记录，没法删除之前一次的记录
+        // 遇到相对路径跳转当前页的情况就没辙了
+        // 会导致有两次相同路径的历史条目...
+        if (hash.charAt(0) !== '/') {
+            location.replace('#' + url.toString());
+        }
     }
 
     var exports = {};
@@ -108,7 +116,7 @@ define(function (require) {
             curLocation = url;
         }
 
-        history.replaceState(options, options.title, '#' + url.toString());
+        location.replace('#' + url.toString());
     };
 
     /**

@@ -55,6 +55,22 @@ define(function (require) {
                 }, INTERVAL_TIME);
             });
 
+            it('should handle relative path', function (done) {
+                var fn = jasmine.createSpy('fn');
+                location.hash = '#/a/b/c';
+
+                hashController.init(fn);
+
+                setTimeout(function () {
+                    location.hash = '#../d';
+                    setTimeout(function () {
+                        expect(fn.calls.count()).toBe(2);
+                        expect(location.hash).toEqual('#/a/d');
+                        done();
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
         });
 
         describe('redirect', function () {
@@ -134,7 +150,7 @@ define(function (require) {
             it('do not change the hash while call it with `silent` param', function (done) {
                 hashController.redirect('/abc', null, {silent: true});
                 setTimeout(function () {
-                    expect(location.hash).toEqual('');
+                    expect(location.hash).toEqual('#/');
                     done();
                 }, INTERVAL_TIME);
             });
