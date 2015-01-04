@@ -172,6 +172,7 @@ define(function (require) {
     exports.dispose = function () {
         window.removeEventListener('hashchange', monitor, false);
         document.body.removeEventListener('click', hackClick, false);
+        curLocation = null;
     };
 
     return exports;

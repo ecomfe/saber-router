@@ -245,6 +245,7 @@ define(function (require) {
      */
     exports.stop = function () {
         controller.dispose();
+        exports.clear();
     };
 
     /**

@@ -158,6 +158,7 @@ define(function (require) {
      */
     exports.dispose = function () {
         window.removeEventListener('hashchange', monitor, false);
+        curLocation = null;
     };
 
     return exports;
