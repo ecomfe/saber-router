@@ -40,7 +40,7 @@ define(function (require) {
     function URL(str, options) {
         options = options || {};
 
-        str = (str || '').trim() || '/';
+        str = (str || '').trim() || config.path;
 
         var token = this.token = options.token || DEFAULT_TOKEN;
 

@@ -34,9 +34,6 @@ define(function (require) {
      * @return {URL}
      */
     function createURL(url, query, base) {
-        if (!url) {
-            url = location.hash.substring(1);
-        }
         return new URL(url, {query: query, base: curLocation, token: '~'});
     }
 
@@ -74,7 +71,7 @@ define(function (require) {
 
         callHandler(url, {});
 
-        // 相对路径的处理
+        // 处理相对路径&空hash
         // 只能替换当次的历史记录，没法删除之前一次的记录
         // 遇到相对路径跳转当前页的情况就没辙了
         // 会导致有两次相同路径的历史条目...

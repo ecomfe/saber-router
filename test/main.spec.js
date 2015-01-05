@@ -21,6 +21,7 @@ define(function (require) {
         },
         dispose: function () {
             this.applyHander = null;
+            this.url = null;
         },
         reset: function () {}
     };
@@ -210,7 +211,8 @@ define(function (require) {
                 router.clear();
                 // reset config
                 router.config({
-                    index: ''
+                    index: '',
+                    path: '/'
                 });
             });
 
@@ -224,6 +226,14 @@ define(function (require) {
                 catch (e) {}
 
                 expect(fn).not.toHaveBeenCalled();
+            });
+
+            it('default path is "/"', function () {
+                var fn = jasmine.createSpy('fn');
+                router.add('/', fn);
+
+                router.redirect();
+                expect(fn).toHaveBeenCalled();
             });
 
             it('set index name', function () {
@@ -240,6 +250,17 @@ define(function (require) {
 
                 router.redirect('/index');
                 expect(fn.calls.count()).toBe(1);
+            });
+
+            it('set path', function () {
+                var fn = jasmine.createSpy('fn');
+                router.config({
+                    path: '/abc/'
+                });
+                router.add('/abc/', fn);
+
+                router.redirect();
+                expect(fn).toHaveBeenCalled();
             });
 
         });
