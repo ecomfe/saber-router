@@ -7,7 +7,7 @@ saber-router [![Build Status](https://travis-ci.org/ecomfe/saber-router.svg)](ht
 * 支持相对路径 `../somewhere/action`
 * 支持正则表达式控制路径
 * 支持`RESTful`
-* 使用`~`添加查询条件 `#/action~uid=100&name=saber`
+* `hash`路由使用`~`分隔查询条件 `#/action~uid=100&name=saber`
 
 ## Installation
 
