@@ -7,7 +7,13 @@ define(function (require) {
 
     var methods = ['redirect', 'init', 'dispose', 'reset'];
 
-    var core = require('./controller/default');
+    var core = {};
+
+    methods.forEach(function (name) {
+        core[name] = function () {
+            throw new Error('route controller need to implement "' + name + '"');
+        };
+    });
 
     var exports = {};
 
