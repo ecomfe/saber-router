@@ -63,7 +63,7 @@ router.start();
 添加路由规则
 
 * **path** `{string|RegExp}` 路由路径，如果是空字符串则认为是设置默认路由。在路由处理未找到对应路由规则时，会使用此默认路由进行处理
-* **fn** `{function(string, Object, Object)}` 路由处理函数（函数参数分别是：path、查询条件、完整URL、跳转参数，具体请参考[redirect(url, query, options)](#redirecturl-query-options)）
+* **fn** `{function(string, Object, Object, string, Object)}` 路由处理函数（函数参数分别是：path、查询条件、路径参数、完整URL、跳转参数，具体跳转参数请参考[redirect(url, query, options)](#redirecturl-query-options)）
 * **thisArg** `{Object=}` 路径处理函数的`this`指针
 
 #### remove(path)
