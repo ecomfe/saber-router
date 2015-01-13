@@ -44,7 +44,7 @@ define(function (require) {
      *
      * @inner
      */
-    function getQueryFromPath(path, item) {
+    function getParamsFromPath(path, item) {
         var res = {};
         var names = item.params || [];
         var params = path.match(item.path) || [];
@@ -71,12 +71,13 @@ define(function (require) {
         var handler;
         var defHandler;
         var query = extend({}, url.getQuery());
+        var params = {};
 
         rules.some(function (item) {
             if (item.path instanceof RegExp) {
                 if (item.path.test(url.getPath())) {
                     handler = item;
-                    query = extend(getQueryFromPath(url.getPath(), item), query);
+                    params = getParamsFromPath(url.getPath(), item);
                 }
             }
             else if (url.equalPath(item.path)) {
@@ -96,7 +97,7 @@ define(function (require) {
             throw new Error('can not found route for: ' + url.getPath());
         }
         else {
-            handler.fn.call(handler.thisArg, url.getPath(), query, url.toString(), options);
+            handler.fn.call(handler.thisArg, url.getPath(), query, params, url.toString(), options);
         }
 
         if (options.title) {

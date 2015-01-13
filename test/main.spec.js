@@ -96,8 +96,9 @@ define(function (require) {
                 var params = fn.calls.argsFor(0);
                 expect(params[0]).toEqual('/home/work');
                 expect(params[1]).toEqual({name: ['treelite', 'saber']});
-                expect(params[2]).toEqual('/home/work?name=treelite&name=saber');
-                expect(params[3]).toEqual(options);
+                expect(params[2]).toEqual({});
+                expect(params[3]).toEqual('/home/work?name=treelite&name=saber');
+                expect(params[4]).toEqual(options);
             });
 
             it('RESTful handler', function () {
@@ -108,7 +109,8 @@ define(function (require) {
 
                 expect(fn).toHaveBeenCalled();
                 var params = fn.calls.argsFor(0);
-                expect(params[1]).toEqual({id: '100', type: 'n'});
+                expect(params[1]).toEqual({type: 'n'});
+                expect(params[2]).toEqual({id: '100'});
             });
 
             it('RegExp handler', function () {
