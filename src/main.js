@@ -61,6 +61,20 @@ define(function (require) {
     }
 
     /**
+     * 是否正在等待处理器执行
+     *
+     * @type {boolean}
+     */
+    var pending = false;
+
+    /**
+     * 等待调用处理器的参数
+     *
+     * @type {!Object}
+     */
+    var waitingRoute;
+
+    /**
      * 根据URL调用处理器
      *
      * @inner
@@ -70,6 +84,26 @@ define(function (require) {
      */
     function apply(url, options) {
         options = options || {};
+
+        // 只保存最后一次的待调用信息
+        if (pending) {
+            waitingRoute = {
+                url: url,
+                options: options
+            };
+            return;
+        }
+
+        function finish() {
+            pending = false;
+            if (waitingRoute) {
+                var route = extend({}, waitingRoute);
+                waitingRoute = null;
+                apply(route.url, route.options);
+            }
+        }
+
+        pending = true;
 
         var handler;
         var defHandler;
@@ -96,15 +130,25 @@ define(function (require) {
 
         handler = handler || defHandler;
 
+
         if (!handler) {
+            waitingRoute = null;
+            pending = false;
             throw new Error('can not found route for: ' + url.getPath());
-        }
-        else {
-            handler.fn.call(handler.thisArg, url.getPath(), query, params, url.toString(), options);
         }
 
         if (options.title) {
             document.title = options.title;
+        }
+
+        var args = [url.getPath(), query, params, url.toString(), options];
+        if (handler.fn.length > args.length) {
+            args.push(finish);
+            handler.fn.apply(handler.thisArg, args);
+        }
+        else {
+            handler.fn.apply(handler.thisArg, args);
+            finish();
         }
     }
 
@@ -255,6 +299,7 @@ define(function (require) {
     exports.stop = function () {
         controller.dispose();
         exports.clear();
+        waitingRoute = null;
     };
 
     /**

@@ -267,6 +267,66 @@ define(function (require) {
 
         });
 
+        describe('support async handler', function () {
+
+            beforeEach(function () {
+                router.start();
+            });
+
+            afterEach(function () {
+                router.stop();
+                router.clear();
+            });
+
+            it('will call waiting route', function (done) {
+                var fn1 = function (path, query, params, url, options, done) {
+                    setTimeout(done, 300);
+                };
+
+                var fn2 = jasmine.createSpy('fn2');
+
+                router.add('/', fn1);
+                router.add('/new', fn2);
+
+                router.redirect('/');
+                router.redirect('/new');
+
+                expect(fn2).not.toHaveBeenCalled();
+
+                setTimeout(function () {
+                    expect(fn2).toHaveBeenCalled();
+                    done();
+                }, 400);
+            });
+
+            it ('only wait for the last route', function (done) {
+                var fn1 = function (path, query, params, url, options, done) {
+                    setTimeout(done, 300);
+                };
+
+                var fn2 = jasmine.createSpy('fn2');
+                var fn3 = jasmine.createSpy('fn3');
+
+                router.add('/', fn1);
+                router.add('/new', fn2);
+                router.add('/detail', fn3);
+
+                router.redirect('/');
+                router.redirect('/new');
+                router.redirect('/detail');
+
+                expect(fn2).not.toHaveBeenCalled();
+                expect(fn3).not.toHaveBeenCalled();
+
+                setTimeout(function () {
+                    expect(fn2).not.toHaveBeenCalled();
+                    expect(fn3).toHaveBeenCalled();
+                    done();
+                }, 400);
+            });
+            
+        });
+
     });
 
 });
