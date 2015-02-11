@@ -18,7 +18,7 @@ define(function (require) {
      * 则添加index文件名
      *
      * @inner
-     * @param {string} path
+     * @param {string} path 路径
      * @return {string}
      */
     function normalPath(path) {
@@ -32,10 +32,10 @@ define(function (require) {
      * URL
      *
      * @constructor
-     * @param {string} str
-     * @param {Object=} options
-     * @param {Object=} options.query
-     * @param {URL=} options.base
+     * @param {string} str url
+     * @param {Object=} options 选项
+     * @param {Object=} options.query 查询条件
+     * @param {URL=} options.base 基路径
      */
     function URL(str, options) {
         options = options || {};
@@ -73,6 +73,7 @@ define(function (require) {
      * 比较Path
      *
      * @public
+     * @param {string} path 路径
      * @return {boolean}
      */
     URL.prototype.equalPath = function (path) {
@@ -86,7 +87,7 @@ define(function (require) {
      * 比较Path与Query是否相等
      *
      * @public
-     * @param {URL} url
+     * @param {URL} url url对象
      * @return {boolean}
      */
     URL.prototype.equal = function (url) {
@@ -98,7 +99,7 @@ define(function (require) {
      * 比较Path, Query及Fragment是否相等
      *
      * @public
-     * @param {URL} url
+     * @param {URL} url url对象
      * @return {boolean}
      */
     URL.prototype.equalWithFragment = function (url) {

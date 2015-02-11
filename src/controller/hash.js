@@ -13,8 +13,8 @@ define(function (require) {
      * 调用路由处理器
      *
      * @inner
-     * @param {URL} url
-     * @param {Object} options
+     * @param {URL} url URL对象
+     * @param {Object} options 选项参数
      */
     function callHandler(url, options) {
         if (curLocation && url.equal(curLocation) && !options.force) {
@@ -28,9 +28,9 @@ define(function (require) {
      * 创建URL对象
      *
      * @inner
-     * @param {string=} url
-     * @param {Object=} query
-     * @param {URL=} base
+     * @param {string=} url url字符串
+     * @param {Object=} query 查询条件
+     * @param {URL=} base 基路径
      * @return {URL}
      */
     function createURL(url, query, base) {
@@ -48,7 +48,7 @@ define(function (require) {
      * 替换当前的hash
      *
      * @inner
-     * @param {string} url
+     * @param {string} url URL
      */
     function replaceHash(url) {
         location.replace('#' + url);
@@ -120,9 +120,9 @@ define(function (require) {
      * 重置当前的URL
      *
      * @public
-     * @param {string} url
-     * @param {Object=} query
-     * @param {Object=} options
+     * @param {string} url 路径
+     * @param {Object=} query 查询条件
+     * @param {Object=} options 重置参数
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {

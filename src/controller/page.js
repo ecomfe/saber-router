@@ -26,8 +26,8 @@ define(function (require) {
      * 路由跳转
      *
      * @public
-     * @param {string} url
-     * @param {Object=} query
+     * @param {string} url URL参数
+     * @param {Object=} query 查询条件
      */
     exports.redirect = function (url, query) {
         url = new URL(url, query);

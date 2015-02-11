@@ -20,7 +20,7 @@ define(function (require) {
      * 判断是否已存在路由处理器
      *
      * @inner
-     * @param {string|RegExp} path
+     * @param {string|RegExp} path 路径
      * @return {number}
      */
     function indexOfHandler(path) {
@@ -43,6 +43,9 @@ define(function (require) {
      * 针对正则表达式的规则
      *
      * @inner
+     * @param {string} path 路径
+     * @param {Object} item 路由信息
+     * @return {Object}
      */
     function getParamsFromPath(path, item) {
         var res = {};
@@ -61,9 +64,9 @@ define(function (require) {
      * 根据URL调用处理器
      *
      * @inner
-     * @param {URL} url
-     * @param {Object=} options
-     * @param {string=} options.title
+     * @param {URL} url url对象
+     * @param {Object=} options 参数
+     * @param {string=} options.title 页面标题
      */
     function apply(url, options) {
         options = options || {};
@@ -110,6 +113,8 @@ define(function (require) {
      * 使用正则表达式
      *
      * @inner
+     * @param {string} path 路径
+     * @return {Object}
      */
     function restful(path) {
         var res = {
@@ -130,6 +135,9 @@ define(function (require) {
      * 添加路由规则
      *
      * @inner
+     * @param {string} path 路径
+     * @param {Function} fn 路由处理函数
+     * @param {Object} thisArg 路由处理函数的this指针
      */
     function addRule(path, fn, thisArg) {
         var rule = {
@@ -154,9 +162,9 @@ define(function (require) {
      * 重置当前的URL
      *
      * @public
-     * @param {string} url
-     * @param {Object=} query
-     * @param {Object=} options
+     * @param {string} url 路径
+     * @param {Object=} query 查询条件
+     * @param {Object=} options 选项
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {
@@ -180,9 +188,9 @@ define(function (require) {
      * 添加路由规则
      *
      * @public
-     * @param {string|RegExp=} path
-     * @param {function(path, query)} fn
-     * @param {Object=} thisArg
+     * @param {string|RegExp=} path 路径
+     * @param {function(path, query)} fn 路由处理函数
+     * @param {Object=} thisArg 路由处理函数的this指针
      */
     exports.add = function (path, fn, thisArg) {
         if (indexOfHandler(path) >= 0) {
@@ -195,7 +203,7 @@ define(function (require) {
      * 删除路由规则
      *
      * @public
-     * @param {string} path
+     * @param {string} path 路径
      */
     exports.remove = function (path) {
         var i = indexOfHandler(path);
@@ -253,7 +261,7 @@ define(function (require) {
      * 更换控制器
      *
      * @public
-     * @param {Object} implement
+     * @param {Object} implement 路由控制器
      */
     exports.controller = function (implement) {
         controller.plugin(implement);

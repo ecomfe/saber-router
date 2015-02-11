@@ -13,8 +13,8 @@ define(function (require) {
      * 调用路由处理器
      *
      * @inner
-     * @param {URL} url
-     * @param {Object} options
+     * @param {URL} url URL对象
+     * @param {Object} options 参数
      */
     function callHandler(url, options) {
         if (curLocation && url.equal(curLocation) && !options.force) {
@@ -28,8 +28,8 @@ define(function (require) {
      * 创建URL对象
      *
      * @inner
-     * @param {string=} url
-     * @param {Object=} query
+     * @param {string=} url url字符串
+     * @param {Object=} query 查询条件
      * @return {URL}
      */
     function createURL(url, query) {
@@ -46,7 +46,7 @@ define(function (require) {
      * 路由监控
      *
      * @inner
-     * @param {Object=} e
+     * @param {Object=} e 事件参数
      */
     function monitor(e) {
         e = e || {};
@@ -58,8 +58,8 @@ define(function (require) {
      * 获取元素的本页跳转地址
      *
      * @inner
-     * @param {HTMLElement} ele
-     * @return {string=}
+     * @param {HTMLElement} ele DOM元素
+     * @return {!string}
      */
     function getLink(ele) {
         var target = ele.getAttribute('target');
@@ -72,11 +72,13 @@ define(function (require) {
         return href.charAt(0) !== '#' && href.indexOf(':') < 0 && href;
     }
 
+    var exports = {};
+
     /**
      * 劫持全局的click事件
      *
      * @inner
-     * @param {Event} e
+     * @param {Event} e 事件参数
      */
     function hackClick(e) {
         var target = e.target;
@@ -105,8 +107,6 @@ define(function (require) {
             e.preventDefault();
         }
     }
-
-    var exports = {};
 
     /**
      * 初始化
@@ -146,9 +146,9 @@ define(function (require) {
      * 重置当前的URL
      *
      * @public
-     * @param {string} url
-     * @param {Object=} query
-     * @param {Object=} options
+     * @param {string} url 路径
+     * @param {Object=} query 查询条件
+     * @param {Object=} options 重置参数
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
      */
     exports.reset = function (url, query, options) {

@@ -21,7 +21,7 @@ define(function (require) {
      * 动态更换内部实现
      *
      * @public
-     * @param {Object} controller
+     * @param {Object} controller 控制器
      */
     exports.plugin = function (controller) {
         core = controller;
