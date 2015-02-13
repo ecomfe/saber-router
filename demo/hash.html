@@ -29,12 +29,16 @@
     <div id="content"></div>
     <p><a id="btn">返回</a></p>
     <ul>
-        <li><a href="/demo/list.html">list</a></li>
-        <li><a href="/demo/product.html?id=100">product 100</a></li>
+        <li><a href="#/">index</a></li>
+        <li><a href="#/list">list</a></li>
+        <li><a href="#/product/100">product 100</a></li>
     </ul>
     <script>
-        require(['saber-router', 'app'], function (router, app) {
-            router.add('/demo/index.html', app.index);
+        require(['saber-router', 'app', 'saber-router/controller/hash'], function (router, app, hash) {
+            router.controller(hash);
+            router.add('/', app.index);
+            router.add('/list', app.list);
+            router.add('/product/:id', app.product);
             router.start();
         });
     </script>
