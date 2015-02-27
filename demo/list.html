@@ -18,7 +18,7 @@
                 },
                 {
                     name: 'saber-uri',
-                    location: 'dep/saber-uri/1.0.0/src'
+                    location: 'dep/saber-uri/1.0.1/src'
                 }
             ]
         });
@@ -33,7 +33,8 @@
         <li><a href="/demo/product.html?id=100">product 100</a></li>
     </ul>
     <script>
-        require(['saber-router', 'app'], function (router, app) {
+        require(['saber-router', 'app', 'saber-router/controller/page'], function (router, app, controller) {
+            router.controller(controller);
             router.add('/demo/list.html', app.list);
             router.start();
         });
