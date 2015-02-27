@@ -47,10 +47,15 @@ define(function (require) {
      *
      * @inner
      * @param {Object=} e 事件参数
+     * @return {*}
      */
     function monitor(e) {
         e = e || {};
         var url = createURL();
+
+        if (url.outRoot) {
+            return outOfControl(url.toString(), true);
+        }
         callHandler(url, e.state || {});
     }
 
@@ -109,6 +114,24 @@ define(function (require) {
     }
 
     /**
+     * URL超出控制范围
+     *
+     * @inner
+     * @param {string} url url地址
+     * @param {boolean} silent 是否不添加历史纪录 默认为false
+     */
+    function outOfControl(url, silent) {
+        exports.dispose();
+
+        if (silent) {
+            location.replace(url);
+        }
+        else {
+            location.href = url;
+        }
+    }
+
+    /**
      * 初始化
      *
      * @public
@@ -130,10 +153,15 @@ define(function (require) {
      * @param {Object=} options 跳转参数
      * @param {boolean=} options.force 是否强制跳转
      * @param {boolean=} options.silent 是否静默跳转（不改变URL）
+     * @return {*}
      */
     exports.redirect = function (url, query, options) {
         options = options || {};
         url = createURL(url, query);
+
+        if (url.outRoot) {
+            return outOfControl(url.toString());
+        }
 
         if (!curLocation.equalWithFragment(url) && !options.silent) {
             history.pushState(options, options.title, url.toString());
@@ -150,10 +178,15 @@ define(function (require) {
      * @param {Object=} query 查询条件
      * @param {Object=} options 重置参数
      * @param {boolean=} options.silent 是否静默重置，静默重置只重置URL，不加载action
+     * @return {*}
      */
     exports.reset = function (url, query, options) {
         options = options || {};
         url = createURL(url, query);
+
+        if (url.outRoot) {
+            return outOfControl(url.toString());
+        }
 
         if (!options.silent) {
             callHandler(url, options);

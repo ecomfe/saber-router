@@ -18,6 +18,14 @@ define({
      *
      * @type {string}
      */
-    path: '/'
+    path: '/',
+
+    /**
+     * 默认的根路径
+     * 只有popstate控制器使用了
+     *
+     * @type {string}
+     */
+    root: '/'
 
 });

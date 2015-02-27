@@ -51,6 +51,7 @@ define(function (require) {
         var base = options.base || {};
         this.path = new Path(str[0], base.path);
         this.query = new Query(str[1]);
+        this.outRoot = this.path.get().indexOf(config.root) !== 0;
 
         if (options.query) {
             this.query.add(options.query);
