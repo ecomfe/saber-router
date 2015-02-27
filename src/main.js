@@ -103,21 +103,33 @@ define(function (require) {
             }
         }
 
+        function error(path) {
+            waitingRoute = null;
+            pending = false;
+            throw new Error('can not found route for: ' + path);
+        }
+
         pending = true;
+
+        if (url.outRoot) {
+            error(url.getPath());
+        }
 
         var handler;
         var defHandler;
+        var root = globalConfig.root || '';
         var query = extend({}, url.getQuery());
         var params = {};
+        var path = url.getPath().substring(root.length);
 
         rules.some(function (item) {
             if (item.path instanceof RegExp) {
-                if (item.path.test(url.getPath())) {
+                if (item.path.test(path)) {
                     handler = item;
-                    params = getParamsFromPath(url.getPath(), item);
+                    params = getParamsFromPath(path, item);
                 }
             }
-            else if (url.equalPath(item.path)) {
+            else if (url.equalPath(root + item.path)) {
                 handler = item;
             }
 
@@ -132,16 +144,14 @@ define(function (require) {
 
 
         if (!handler) {
-            waitingRoute = null;
-            pending = false;
-            throw new Error('can not found route for: ' + url.getPath());
+            error(path);
         }
 
         if (options.title) {
             document.title = options.title;
         }
 
-        var args = [url.getPath(), query, params, url.toString(), options];
+        var args = [path, query, params, url.toString(), options];
         if (handler.fn.length > args.length) {
             args.push(finish);
             handler.fn.apply(handler.thisArg, args);
@@ -225,6 +235,12 @@ define(function (require) {
      */
     exports.config = function (options) {
         options = options || {};
+        // 修正root，去掉末尾的'/'
+        root = options.root || '';
+        if (root && root.charAt(root.length - 1) === '/') {
+            root = root.substring(0, root.length - 1);
+            options.root = root;
+        }
         extend(globalConfig, options);
     };
 

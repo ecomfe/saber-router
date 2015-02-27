@@ -39,9 +39,9 @@
     <script>
         require(['saber-router', 'app', 'saber-router/controller/popstate'], function (router, app, popstate) {
             router.controller(popstate);
-            router.add('/demo/popstate/index.html', app.index);
-            router.add('/demo/popstate/list', app.list);
-            router.add('/demo/popstate/product/:id', app.product);
+            router.add('/index.html', app.index);
+            router.add('/list', app.list);
+            router.add('/product/:id', app.product);
             router.config({
                 root: '/demo/popstate/'
             });

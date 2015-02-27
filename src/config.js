@@ -22,10 +22,10 @@ define({
 
     /**
      * 默认的根路径
-     * 只有popstate控制器使用了
+     * 目前只对popstate有意义
      *
      * @type {string}
      */
-    root: '/'
+    root: ''
 
 });

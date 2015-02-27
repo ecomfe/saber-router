@@ -214,7 +214,8 @@ define(function (require) {
                 // reset config
                 router.config({
                     index: '',
-                    path: '/'
+                    path: '/',
+                    root: ''
                 });
             });
 
@@ -262,6 +263,17 @@ define(function (require) {
                 router.add('/abc/', fn);
 
                 router.redirect();
+                expect(fn).toHaveBeenCalled();
+            });
+
+            it('set root', function () {
+                var fn = jasmine.createSpy('fn');
+                router.config({
+                    root: '/hello/'
+                });
+                router.add('/', fn);
+
+                router.redirect('/hello/');
                 expect(fn).toHaveBeenCalled();
             });
 
