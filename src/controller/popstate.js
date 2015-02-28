@@ -26,6 +26,36 @@ define(function (require) {
     }
 
     /**
+     * url忽略root
+     *
+     * @inner
+     * @param {string} url url
+     * @return {string}
+     */
+    function ignoreRoot(url) {
+        var root = config.root;
+        if (url.charAt(0) === '/' && root) {
+            if (url.indexOf(root) === 0) {
+                url = url.replace(root, '');
+            }
+            else {
+                // 绝对地址超出了root的范围
+                // 转化为相对路径
+                var dirs = root.split('/').slice(1);
+                dirs = dirs.map(function () {
+                    return '..';
+                });
+                url = dirs.join('/') + url;
+                // 此时的相对路径是针对root的
+                // 所以把curlocation置为空
+                curLocation = null;
+            }
+        }
+
+        return url;
+    }
+
+    /**
      * 创建URL对象
      *
      * @inner
@@ -35,11 +65,7 @@ define(function (require) {
      */
     function createURL(url, query) {
         if (!url) {
-            url = location.pathname;
-            // 去掉root
-            if (config.root) {
-                url = url.replace(config.root, '');
-            }
+            url = ignoreRoot(location.pathname);
 
             if (location.search.length > 1) {
                 url += location.search;
@@ -114,7 +140,7 @@ define(function (require) {
 
         var href = getLink(target);
         if (href) {
-            exports.redirect(href);
+            exports.redirect(ignoreRoot(href));
             e.preventDefault();
         }
     }
