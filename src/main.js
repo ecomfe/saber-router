@@ -226,12 +226,14 @@ define(function (require) {
      */
     exports.config = function (options) {
         options = options || {};
-        // 修正root，去掉末尾的'/'
-        var root = options.root || '';
+        // 修正root，添加头部的`/`并去掉末尾的'/'
+        var root = options.root;
         if (root && root.charAt(root.length - 1) === '/') {
-            root = root.substring(0, root.length - 1);
+            root = options.root = root.substring(0, root.length - 1);
         }
-        options.root = root;
+        if (root && root.charAt(0) !== '/') {
+            options.root = '/' + root;
+        }
         extend(globalConfig, options);
     };
 

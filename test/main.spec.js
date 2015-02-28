@@ -269,7 +269,9 @@ define(function (require) {
             it('set root', function () {
                 var fn = jasmine.createSpy('fn');
                 router.config({
-                    root: '/hello/'
+                    // 正确的root是'/hello'
+                    // 此处验证容错性
+                    root: 'hello/'
                 });
                 router.add('/', fn);
 
