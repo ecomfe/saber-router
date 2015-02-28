@@ -103,24 +103,13 @@ define(function (require) {
             }
         }
 
-        function error(path) {
-            waitingRoute = null;
-            pending = false;
-            throw new Error('can not found route for: ' + path);
-        }
-
         pending = true;
-
-        if (url.outRoot) {
-            error(url.getPath());
-        }
 
         var handler;
         var defHandler;
-        var root = globalConfig.root || '';
         var query = extend({}, url.getQuery());
         var params = {};
-        var path = url.getPath().substring(root.length);
+        var path = url.getPath();
 
         rules.some(function (item) {
             if (item.path instanceof RegExp) {
@@ -129,7 +118,7 @@ define(function (require) {
                     params = getParamsFromPath(path, item);
                 }
             }
-            else if (url.equalPath(root + item.path)) {
+            else if (url.equalPath(item.path)) {
                 handler = item;
             }
 
@@ -144,7 +133,9 @@ define(function (require) {
 
 
         if (!handler) {
-            error(path);
+            waitingRoute = null;
+            pending = false;
+            throw new Error('can not found route for: ' + path);
         }
 
         if (options.title) {
@@ -236,11 +227,11 @@ define(function (require) {
     exports.config = function (options) {
         options = options || {};
         // 修正root，去掉末尾的'/'
-        root = options.root || '';
+        var root = options.root || '';
         if (root && root.charAt(root.length - 1) === '/') {
             root = root.substring(0, root.length - 1);
-            options.root = root;
         }
+        options.root = root;
         extend(globalConfig, options);
     };
 

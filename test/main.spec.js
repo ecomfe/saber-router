@@ -273,8 +273,10 @@ define(function (require) {
                 });
                 router.add('/', fn);
 
-                router.redirect('/hello/');
+                router.redirect('/');
                 expect(fn).toHaveBeenCalled();
+                var args = fn.calls.argsFor(0);
+                expect(args).toEqual(['/', {}, {}, '/hello/', {}]);
             });
 
         });

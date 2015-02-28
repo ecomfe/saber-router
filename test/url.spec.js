@@ -50,36 +50,88 @@ define(function (require) {
                 expect(url.path.get()).toEqual('/');
             });
 
+            it('with root', function () {
+                var url = new URL('abc', {root: '/abc'});
+
+                expect(url.path.get()).toEqual('/abc');
+                expect(url.root).toEqual('/abc');
+
+                url = new URL('/abc', {root: '/abc/'});
+
+                expect(url.path.get()).toEqual('/abc');
+                expect(url.root).toEqual('/abc');
+            });
+
+            it('relative path with root', function () {
+                var url = new URL('../../abc', {root: '/abc'});
+                expect(url.path.get()).toEqual('/');
+                expect(url.root).toEqual('/abc');
+
+                url = new URL('../abc/foo', {root: '/abc'});
+                expect(url.path.get()).toEqual('/foo');
+                expect(url.root).toEqual('/abc');
+
+                url = new URL('./foo', {root: '/abc'});
+                expect(url.path.get()).toEqual('/foo');
+                expect(url.root).toEqual('/abc');
+
+                url = new URL('../../foo', {root: '/abc'});
+                expect(url.path.get()).toEqual('../../foo');
+                expect(url.root).toEqual('/abc');
+            });
+
         });
 
         describe('.toString()', function () {
 
             it('should return the right string', function () {
-                var str = '../work/search?kw=xxx'
-                var url = new URL(str);
-                expect(url.toString()).toEqual(str);
+                var url = new URL('../work/search?kw=xxx');
+                expect(url.toString()).toEqual('/work/search?kw=xxx');
 
-                str = 'work/search?';
-                url = new URL(str);
-                expect(url.toString()).toEqual('work/search');
+                url = new URL('/work/search/');
+                expect(url.toString()).toEqual('/work/search/');
 
-                str = 'work/search?www#';
-                url = new URL(str);
-                expect(url.toString()).toEqual('work/search?www');
+                url = new URL('work/search?');
+                expect(url.toString()).toEqual('/work/search');
 
-                str = 'work/search?www#111';
-                url = new URL(str);
-                expect(url.toString()).toEqual(str);
+                url = new URL('work/search?www#');
+                expect(url.toString()).toEqual('/work/search?www');
+
+                url = new URL('work/search?www#111');
+                expect(url.toString()).toEqual('/work/search?www#111');
+
+                url = new URL();
+                expect(url.toString()).toEqual('/');
             });
 
             it('should return the right string with special token', function () {
-                var str = '../work/search~kw=xxx'
-                var url = new URL(str, {token: '~'});
-                expect(url.toString()).toEqual(str);
+                var url = new URL('../work/search~kw=xxx', {token: '~'});
+                expect(url.toString()).toEqual('/work/search~kw=xxx');
 
-                str = 'work/search~';
-                url = new URL(str, {token: '~'});
-                expect(url.toString()).toEqual('work/search');
+                url = new URL('work/search~', {token: '~'});
+                expect(url.toString()).toEqual('/work/search');
+            });
+
+            it('with root', function () {
+                var url = new URL('abc', {root: '/abc'});
+                expect(url.toString()).toEqual('/abc/abc')
+
+                url = new URL('/abc', {root: '/abc/'});
+                expect(url.toString()).toEqual('/abc/abc');
+            });
+
+            it('relative path with root', function () {
+                var url = new URL('../../abc', {root: '/abc'});
+                expect(url.toString()).toEqual('/abc/');
+
+                url = new URL('../abc/foo', {root: '/abc'});
+                expect(url.toString()).toEqual('/abc/foo');
+
+                url = new URL('./foo', {root: '/abc'});
+                expect(url.toString()).toEqual('/abc/foo');
+
+                url = new URL('../../foo', {root: '/abc'});
+                expect(url.toString()).toEqual('/foo');
             });
 
         });
@@ -149,7 +201,7 @@ define(function (require) {
             it('should return string', function () {
                 var url = new URL('work/search');
 
-                expect(url.getPath()).toEqual('work/search');
+                expect(url.getPath()).toEqual('/work/search');
             });
 
         });

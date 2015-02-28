@@ -36,6 +36,7 @@ define(function (require) {
      * @param {Object=} options 选项
      * @param {Object=} options.query 查询条件
      * @param {URL=} options.base 基路径
+     * @param {string=} options.root 根路径
      */
     function URL(str, options) {
         options = options || {};
@@ -43,6 +44,11 @@ define(function (require) {
         str = (str || '').trim() || config.path;
 
         var token = this.token = options.token || DEFAULT_TOKEN;
+        var root = options.root || config.root;
+        if (root.charAt(root.length - 1) === '/') {
+            root = root.substring(0, root.length - 1);
+        }
+        this.root = root;
 
         str = str.split('#');
         this.fragment = new Fragment(str[1]);
@@ -51,7 +57,24 @@ define(function (require) {
         var base = options.base || {};
         this.path = new Path(str[0], base.path);
         this.query = new Query(str[1]);
-        this.outRoot = this.path.get().indexOf(config.root) !== 0;
+
+        // 路径修正
+        // * 针对相对路径修正
+        // * 添加默认的'/'
+        var path = this.path.get();
+        this.outRoot = path.indexOf('..') === 0;
+        if (this.outRoot) {
+            path = Path.resolve(root + '/', path);
+            if (path.indexOf(root) === 0) {
+                path = path.substring(root.length);
+                this.path.set(path);
+                this.outRoot = false;
+            }
+        }
+
+        if (!this.outRoot && path.charAt(0) !== '/') {
+            this.path.set('/' + path);
+        }
 
         if (options.query) {
             this.query.add(options.query);
@@ -65,7 +88,16 @@ define(function (require) {
      * @return {string}
      */
     URL.prototype.toString = function () {
-        return this.path.toString()
+        var root = this.root;
+        var path = this.path.get();
+        if (this.outRoot) {
+            path = Path.resolve(root + '/', path);
+        }
+        else {
+            path = root + path;
+        }
+
+        return path
             + this.query.toString(this.token)
             + this.fragment.toString();
     };

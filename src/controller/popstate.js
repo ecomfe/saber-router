@@ -6,6 +6,7 @@
 define(function (require) {
 
     var URL = require('../URL');
+    var config = require('../config');
     var applyHandler;
     var curLocation;
 
@@ -35,6 +36,11 @@ define(function (require) {
     function createURL(url, query) {
         if (!url) {
             url = location.pathname;
+            // 去掉root
+            if (config.root) {
+                url = url.replace(config.root, '');
+            }
+
             if (location.search.length > 1) {
                 url += location.search;
             }
