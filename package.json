@@ -14,9 +14,11 @@
     "test": "phantomjs test/run-jasmine.js http://localhost:8848/test/runner.html",
     "posttest": "node test/ws.js stop"
   },
-  "dependencies": {
-    "saber-lang": "~1.0.0",
-    "saber-uri": "~1.0.4"
+  "edp": {
+    "dependencies": {
+      "saber-lang": "~2.0.0-alpha.1",
+      "saber-uri": "~1.0.4"
+    }
   },
   "devDependencies": {
     "phantomjs": "~1.9.7-1"
