@@ -34,7 +34,11 @@ define(function (require) {
      * @return {URL}
      */
     function createURL(url, query, base) {
-        return new URL(url, {query: query, base: curLocation, token: '~'});
+        var token = '~';
+        if (!url) {
+            url = location.hash.substring(1).split(token)[0];
+        }
+        return new URL(url, {query: query, base: curLocation, token: token});
     }
 
     /**

@@ -9,6 +9,21 @@ define(function (require) {
     var exports = {};
 
     /**
+     * 创建URL对象
+     *
+     * @inner
+     * @param {string=} url url字符串
+     * @param {Object=} query 查询条件
+     * @return {URL}
+     */
+    function createURL(url, query) {
+        if (!url) {
+            url.location.pathname;
+        }
+        return new URL(url, {query: query});
+    }
+
+    /**
      * 初始化
      *
      * @public
@@ -19,7 +34,7 @@ define(function (require) {
         if (location.search.length > 1) {
             url += location.search;
         }
-        applyHanlder(new URL(url));
+        applyHanlder(createURL(url));
     };
 
     /**
@@ -30,7 +45,7 @@ define(function (require) {
      * @param {Object=} query 查询条件
      */
     exports.redirect = function (url, query) {
-        url = new URL(url, query);
+        url = createURL(url, query);
         location.href = url.toString();
     };
 

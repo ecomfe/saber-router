@@ -66,10 +66,6 @@ define(function (require) {
     function createURL(url, query) {
         if (!url) {
             url = ignoreRoot(location.pathname);
-
-            if (location.search.length > 1) {
-                url += location.search;
-            }
         }
         return new URL(url, {query: query, base: curLocation});
     }
@@ -83,7 +79,12 @@ define(function (require) {
      */
     function monitor(e) {
         e = e || {};
-        var url = createURL();
+
+        var url = ignoreRoot(location.pathname);
+        if (location.search.length > 1) {
+            url += location.search;
+        }
+        url = createURL(url);
 
         if (url.outRoot) {
             return outOfControl(url.toString(), true);

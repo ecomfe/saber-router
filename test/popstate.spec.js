@@ -12,7 +12,7 @@ define(function (require) {
 
         describe('init/dipose', function () {
 
-            it('should apply handler with current hash', function (done) {
+            it('should apply handler with current path', function (done) {
                 var fn = jasmine.createSpy('fn');
                 history.pushState({}, document.title, '?name=treelite&w=1');
 
@@ -202,6 +202,27 @@ define(function (require) {
                                 finish(done, 2);
                             }, INTERVAL_TIME);
                         }, INTERVAL_TIME);
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
+            it('support empty path', function (done) {
+                var url = '/a/b/c';
+                var query = '?name=treelite';
+                controller.redirect(url);
+                setTimeout(function () {
+                    controller.redirect(query);
+                    setTimeout(function () {
+                        expect(handler.calls.count()).toBe(2);
+                        expect(location.pathname).toEqual(url);
+                        expect(location.search).toEqual(query);
+                        controller.redirect('', {name: 'saber'});
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(3);
+                            expect(location.pathname).toEqual(url);
+                            expect(location.search).toEqual('?name=saber');
+                            finish(done, 3);
+                        });
                     }, INTERVAL_TIME);
                 }, INTERVAL_TIME);
             });

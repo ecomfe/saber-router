@@ -206,6 +206,25 @@ define(function (require) {
                 }, INTERVAL_TIME);
             });
 
+            it('support empty path', function (done) {
+                var url = '/a/b/c';
+                var query = '~name=treelite';
+                controller.redirect(url);
+                setTimeout(function () {
+                    controller.redirect(query);
+                    setTimeout(function () {
+                        expect(handler.calls.count()).toBe(2);
+                        expect(location.hash).toEqual('#' + url + query);
+                        controller.redirect('', {name: 'saber'});
+                        setTimeout(function () {
+                            expect(handler.calls.count()).toBe(3);
+                            expect(location.hash).toEqual('#' + url + '~name=saber');
+                            finish(done);
+                        });
+                    }, INTERVAL_TIME);
+                }, INTERVAL_TIME);
+            });
+
         });
 
         describe('reset', function () {
