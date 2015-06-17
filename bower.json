@@ -16,7 +16,7 @@
   "devDependencies": {
     "phantomjs": "~1.9.7-1"
   },
-  "license": "BSD",
+  "license": "MIT",
   "repository": "git://github.com/ecomfe/saber-router.git",
   "bugs": "https://github.com/ecomfe/saber-router/issues",
   "ignore": [
