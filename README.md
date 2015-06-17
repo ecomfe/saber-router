@@ -1,5 +1,7 @@
-saber-router [![Build Status](https://travis-ci.org/ecomfe/saber-router.svg)](https://travis-ci.org/ecomfe/saber-router)
+saber-router
 ===
+
+![Bower version](https://img.shields.io/bower/v/saber-router.svg?style=flat-square) [![Build Status](https://img.shields.io/travis/ecomfe/saber-router.svg?style=flat-square)](https://travis-ci.org/ecomfe/saber-router) [![License](https://img.shields.io/npm/l/saber-ajax.svg?style=flat-square)](./LICENSE) [![EFE Mobile Team](https://img.shields.io/badge/EFE-Mobile_Team-blue.svg?style=flat-square)](http://efe.baidu.com)
 
 适用于移动端的路由控制
 
