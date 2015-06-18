@@ -7,9 +7,10 @@ define(function (require) {
 
     var Path = require('saber-uri/component/Path');
     var Query = require('saber-uri/component/Query');
+    var Fragment = require('saber-uri/component/Fragment');
     var config = require('./config');
 
-    var QUERY_SPLIT = '~';
+    var DEFAULT_TOKEN = '?';
 
     /**
      * normal path
@@ -17,7 +18,7 @@ define(function (require) {
      * 则添加index文件名
      *
      * @inner
-     * @param {string} path
+     * @param {string} path 路径
      * @return {string}
      */
     function normalPath(path) {
@@ -31,28 +32,50 @@ define(function (require) {
      * URL
      *
      * @constructor
-     * @param {string} str
-     * @param {Object=} options
-     * @param {Object=} options.query
-     * @param {URL=} options.base
+     * @param {string} str url
+     * @param {Object=} options 选项
+     * @param {Object=} options.query 查询条件
+     * @param {URL=} options.base 基路径
+     * @param {string=} options.root 根路径
      */
     function URL(str, options) {
         options = options || {};
-        var base = options.base || {};
 
-        str = str.trim();
-        if (str.charAt(0) === '#') {
-            str = str.substring(1);
+        str = (str || '').trim() || config.path;
+
+        var token = this.token = options.token || DEFAULT_TOKEN;
+        var root = options.root || config.root;
+        if (root.charAt(root.length - 1) === '/') {
+            root = root.substring(0, root.length - 1);
+        }
+        this.root = root;
+
+        str = str.split('#');
+        this.fragment = new Fragment(str[1]);
+
+        str = str[0].split(token);
+        var base = options.base || {};
+        this.path = new Path(str[0], base.path);
+        this.query = new Query(str[1]);
+
+        // 路径修正
+        // * 针对相对路径修正
+        // * 添加默认的'/'
+        var path = this.path.get();
+        this.outRoot = path.indexOf('..') === 0;
+        if (this.outRoot) {
+            path = Path.resolve(root + '/', path);
+            if (path.indexOf(root) === 0) {
+                path = path.substring(root.length);
+                this.path.set(path);
+                this.outRoot = false;
+            }
         }
 
-        str = str.split(QUERY_SPLIT);
+        if (!this.outRoot && path.charAt(0) !== '/') {
+            this.path.set('/' + path);
+        }
 
-        var path = str[0].trim();
-        this.isRelative = path.charAt(0) !== '/';
-        this.path = new Path(path, base.path);
-
-        var queryStr = str[1] && str[1].trim();
-        this.query = new Query(queryStr || '');
         if (options.query) {
             this.query.add(options.query);
         }
@@ -65,13 +88,25 @@ define(function (require) {
      * @return {string}
      */
     URL.prototype.toString = function () {
-        return this.path.toString() + this.query.toString(QUERY_SPLIT);
+        var root = this.root;
+        var path = this.path.get();
+        if (this.outRoot) {
+            path = Path.resolve(root + '/', path);
+        }
+        else {
+            path = root + path;
+        }
+
+        return path
+            + this.query.toString(this.token)
+            + this.fragment.toString();
     };
 
     /**
      * 比较Path
      *
      * @public
+     * @param {string} path 路径
      * @return {boolean}
      */
     URL.prototype.equalPath = function (path) {
@@ -82,15 +117,27 @@ define(function (require) {
     };
 
     /**
-     * 比较
+     * 比较Path与Query是否相等
      *
      * @public
-     * @param {URL} url
-     * @return {Boolean}
+     * @param {URL} url url对象
+     * @return {boolean}
      */
     URL.prototype.equal = function (url) {
         return this.query.equal(url.query)
             && this.equalPath(url.path.get());
+    };
+
+    /**
+     * 比较Path, Query及Fragment是否相等
+     *
+     * @public
+     * @param {URL} url url对象
+     * @return {boolean}
+     */
+    URL.prototype.equalWithFragment = function (url) {
+        return this.equal(url)
+            && this.fragment.equal(url.fragment);
     };
 
     /**
@@ -101,17 +148,6 @@ define(function (require) {
      */
     URL.prototype.getQuery = function () {
         return this.query.get();
-    };
-
-    /**
-     * 添加查询条件
-     *
-     * @public
-     * @param {string|Object} key
-     * @param {string} value
-     */
-    URL.prototype.addQuery = function (key, value) {
-        this.query.add(key, value);
     };
 
     /**

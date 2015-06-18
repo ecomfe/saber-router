@@ -7,6 +7,7 @@
     <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-8-6/esl.js"></script>
     <script>
         require.config({
+            baseUrl: '../',
             packages: [
                 {
                     name: 'saber-router',
@@ -29,13 +30,21 @@
     <div id="content"></div>
     <p><a id="btn">返回</a></p>
     <ul>
-        <li><a href="/demo/list.html">list</a></li>
-        <li><a href="/demo/product.html?id=100">product 100</a></li>
+        <li><a href="/demo/popstate/index.html">index</a></li>
+        <li><a href="/demo/popstate/list">list</a></li>
+        <li><a href="/demo/popstate/product/100">product 100</a></li>
+        <li><a href="http://www.baidu.com" target="_blank">Anthor target</a></li>
+        <li><a href="/demo/hash.html">Out of control: Hash demo</a></li>
     </ul>
     <script>
-        require(['saber-router', 'app', 'saber-router/controller/page'], function (router, app, controller) {
-            router.controller(controller);
-            router.add('/demo/index.html', app.index);
+        require(['saber-router', 'app', 'saber-router/controller/popstate'], function (router, app, popstate) {
+            router.controller(popstate);
+            router.add('/index.html', app.index);
+            router.add('/list', app.list);
+            router.add('/product/:id', app.product);
+            router.config({
+                root: '/demo/popstate'
+            });
             router.start();
         });
     </script>
