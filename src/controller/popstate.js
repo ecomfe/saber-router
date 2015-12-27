@@ -236,7 +236,7 @@ define(function (require) {
      * @public
      */
     exports.dispose = function () {
-        window.removeEventListener('hashchange', monitor, false);
+        window.removeEventListener('popstate', monitor, false);
         document.body.removeEventListener('click', hackClick, false);
         curLocation = null;
     };
